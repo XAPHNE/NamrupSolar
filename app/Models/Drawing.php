@@ -11,4 +11,9 @@ class Drawing extends Model
     use HasFactory, SoftDeletes;
 
     public $fillable = ['name', 'drawing_no', 'total_drawings', 'total_drawings_scope', 'total_submitted_drawings', 'total_approved_drawings'];
+
+    public function details()
+    {
+        return $this->hasMany(DrawingDetail::class, 'drawing_id');
+    }
 }
