@@ -1,0 +1,13 @@
+id,name,drawing_no,total_drawings,total_drawings_scope,total_submitted_drawings,total_approved_drawings,created_at,updated_at,deleted_at
+1, Analysis Reports,APGCL-AR,3,1,2,2,22-08-2024 15:22,23-08-2024 15:22,NULL
+2,AC Design Calculations,APGCL-AC Calc,8,0,8,0,23-08-2024 15:22,24-08-2024 15:22,NULL
+3,DC Design Calculations,APGCL-DC Calc,5,2,4,3,24-08-2024 15:22,25-08-2024 15:22,NULL
+4,AC Electrical Drawings,APGCL-AC ED,8,3,5,4,25-08-2024 15:22,26-08-2024 15:22,NULL
+5,DC  Electrical Drawings,APGCL-DC ED,10,,,,26-08-2024 15:22,27-08-2024 15:22,NULL
+6,AC GTP and Drawings,APGCL-AC GTP,10,,,,27-08-2024 15:22,28-08-2024 15:22,NULL
+7,DC GTP & Drawings,APGCL-DC GTP,10,,,,28-08-2024 15:22,29-08-2024 15:22,NULL
+8,Structure Drawings,APGCL-MMS,10,,,,29-08-2024 15:22,30-08-2024 15:22,NULL
+9,Civil Drawings,APGCL-CD,10,,,,30-08-2024 15:22,31-08-2024 15:22,NULL
+10,Civil Design Calculations,APGCL-CD Calc,10,,,,31-08-2024 15:22,01-09-2024 15:22,NULL
+11,SCADA,APGCL-RMS,10,,,,01-09-2024 15:22,02-09-2024 15:22,NULL
+12,QAP,APGCL-QAP,10,,,,02-09-2024 15:22,03-09-2024 15:22,NULL
