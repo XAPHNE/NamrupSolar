@@ -28,9 +28,9 @@
     <link rel="stylesheet" href="{{ asset('plugins/summernote/summernote-bs4.min.css') }}">
 
     <!-- DataTable -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="//cdn.datatables.net/2.1.5/css/dataTables.dataTables.min.css">
     {{-- <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet"> --}}
-    <link href="{{ asset('plugins/datatabls.net/datatables.min.css') }}" rel="stylesheet">
+    {{-- <link href="{{ asset('plugins/datatabls.net/datatables.min.css') }}" rel="stylesheet"> --}}
     <!-- DataTables Buttons extension -->
     {{-- <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.7.1/css/buttons.dataTables.min.css"> --}}
 
@@ -84,9 +84,9 @@
 </div>
 
 <!-- jQuery -->
-{{-- <script src="{{ asset('plugins/jquery/jquery.min.js') }}"></script> --}}
-<!-- jQuery UI 1.11.4 -->
-{{-- <script src="{{ asset('plugins/jquery-ui/jquery-ui.min.js') }}"></script> --}}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<!-- jQuery UI 1.14 -->
+<script src="https://code.jquery.com/ui/1.14.0/jquery-ui.min.js"></script>
 <script>$.widget.bridge('uibutton', $.ui.button)</script>
 <!-- Bootstrap 4 -->
 {{-- <script src="{{ asset('plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script> --}}
@@ -117,7 +117,7 @@
 {{-- <script src="{{ asset('plugins/datatables/jquery.dataTables.min.js') }}"></script> --}}
 {{-- <script src="{{ asset('plugins/datatables/jquery.dataTables.min.js') }}"></script> --}}
 <!-- DataTables Buttons JS -->
-<script src="{{ asset('plugins/datatables.net/datatables.min.js') }}"></script>
+<script src="//cdn.datatables.net/2.1.5/js/dataTables.min.js"></script>
 {{-- <script src="{{ asset('plugins/datatables-buttons/js/dataTables.buttons.min.js') }}"></script>
 <script src="{{ asset('plugins/jszip/jszip.min.js') }}"></script>
 <script src="{{ asset('plugins/datatables-buttons/js/buttons.html5.min.js') }}"></script>

@@ -18,36 +18,17 @@ return new class extends Migration
             $table->string('drawing_details_name');
             $table->string('drawing_details_no');
             $table->boolean('isScopeDrawing')->default(true);
-            $table->boolean('isSubmitted')->default(false);
-            $table->boolean('isApproved')->default(false);
+            $table->datetime('submitted_at')->nullable();
+            $table->unsignedBigInteger('submitted_by')->nullable();
+            $table->datetime('approved_at')->nullable();
+            $table->unsignedBigInteger('approved_by')->nullable();
             $table->timestamps();
             $table->softDeletes();
-            $table->foreign('drawing_id')->references('id')->on('drawings')->onDelete('cascade');
-        });
 
-        DB::table('drawing_details')->insert([
-            [
-                'drawing_id' => 1,
-                'drawing_details_name' => 'Contour Survey Report',
-                'drawing_details_no' => 'APGCL-AR-01',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'drawing_id' => 1,
-                'drawing_details_name' => 'Geo-Technical Investigation Report',
-                'drawing_details_no' => 'APGCL-AR-02',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'drawing_id' => 1,
-                'drawing_details_name' => 'PVsyst Report',
-                'drawing_details_no' => 'APGCL-AR-03',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
+            $table->foreign('drawing_id')->references('id')->on('drawings')->onDelete('cascade');
+            $table->foreign('submitted_by')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('approved_by')->references('id')->on('users')->onDelete('set null');
+        });
     }
 
     /**

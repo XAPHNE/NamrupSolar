@@ -13,37 +13,29 @@
         @foreach($drawings as $drawing)
             <div class="col-sm-2 mb-2">
                 <div class="card shadow-sm bg-info clickable-card" 
-                     data-id="{{ $drawing->id }}" 
-                     data-name="{{ $drawing->name }}" 
-                     data-drawings="{{ $drawing->total_drawings }}" 
-                     data-scope="{{ $drawing->total_drawings_scope }}" 
-                     data-submitted="{{ $drawing->total_submitted_drawings }}" 
-                     data-approved="{{ $drawing->total_approved_drawings }}"
-                     style="height: 60px; margin: 0 auto;">
+                    data-id="{{ $drawing->id }}" 
+                    data-name="{{ $drawing->name }}" 
+                    data-total-drawings="{{ $drawing->total_drawings }}" 
+                    data-total-scope="{{ $drawing->total_drawings_scope }}" 
+                    data-total-submitted="{{ $drawing->total_submitted_drawings }}" 
+                    data-total-approved="{{ $drawing->total_approved_drawings }}"
+                    style="height: 60px; margin: 0 auto;">
                     <div class="p-3 text-center">
                         <p class="text-center mb-0" style="font-size: 14px;">{{ $drawing->name }}</p>
                         <a href="#" class="stretched-link"></a>
                     </div>
                 </div>
             </div>
-        @endforeach
+        @endforeach    
     </div>
 
+    <!-- Charts and DataTable -->
     <div class="row mt-4">
         <div class="col-sm-6">
             <!-- LINE CHART -->
             <div class="card card-info">
                 <div class="card-header">
                     <h3 class="card-title">Line Chart</h3>
-    
-                    {{-- <div class="card-tools">
-                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                            <i class="fas fa-minus"></i>
-                        </button>
-                        <button type="button" class="btn btn-tool" data-card-widget="remove">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div> --}}
                 </div>
                 <div class="card-body">
                     <div class="chart">
@@ -58,15 +50,6 @@
             <div class="card card-info">
                 <div class="card-header">
                     <h3 class="card-title">Bar Chart</h3>
-
-                    {{-- <div class="card-tools">
-                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                            <i class="fas fa-minus"></i>
-                        </button>
-                        <button type="button" class="btn btn-tool" data-card-widget="remove">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div> --}}
                 </div>
                 <div class="card-body">
                     <div class="chart">
@@ -76,6 +59,7 @@
             </div>
         </div>
     </div>
+
     <!-- DataTable for Drawing Details -->
     <div class="row mt-4">
         <div class="col-12">
@@ -90,8 +74,14 @@
                                 <th>Number</th>
                                 <th>Name</th>
                                 <th>Scope</th>
-                                <th>Submitted</th>
-                                <th>Approved</th>
+                                <th>Submitted At</th>
+                                <th>Submitted By</th>
+                                <th>Comment</th>
+                                <th>Commented At</th>
+                                <th>Commented By</th>
+                                <th>Resubmitted At</th>
+                                <th>Approved At</th>
+                                <th>Approved By</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -117,171 +107,93 @@
             processing: true,
             serverSide: false,
             paging: true,
-            searching: false,
-            lengthChange: false,
-            autoWidth: false,
+            searching: true,
+            lengthChange: true,
+            autoWidth: true,
             columns: [
-                { data: 'drawing_details_no' },
-                { data: 'drawing_details_name' },
-                { data: 'isScopeDrawing', render: function(data, type, row) {
-                        return data ? 'Yes' : 'No';
+                { data: 'drawing_details_no', title: 'Number' },
+                { data: 'drawing_details_name', title: 'Name' },
+                { data: 'isScopeDrawing', title: 'Scope', render: function(data, type, row) {
+                        return data === 'Yes' ? 'Yes' : 'No';
                     } 
                 },
-                { data: 'isSubmitted', render: function(data, type, row) {
-                        return data ? 'Yes' : 'No';
+                { data: 'submitted_at', title: 'Submitted At', render: function(data) {
+                        return data ? data : 'N/A';
+                    } 
+                },
+                { data: 'submitted_by', title: 'Submitted By', render: function(data) {  // Display the submitter's name
+                        return data ? data : 'N/A';
+                    } 
+                },
+                { data: 'comment_body', title: 'Comment', render: function(data) { // New comment column
+                        return data ? data : 'N/A';
                     }
                 },
-                { data: 'isApproved', render: function(data, type, row) {
-                        return data ? 'Yes' : 'No';
-                    }
-                }
+                { data: 'commented_at', title: 'Commented At', render: function(data) {
+                        return data ? data : 'N/A';
+                    } 
+                },
+                { data: 'commented_by', title: 'Commented By', render: function(data) {  // Display the commenter's name
+                        return data ? data : 'N/A';
+                    } 
+                },
+                { data: 'resubmitted_at', title: 'Resubmitted At', render: function(data) {
+                        return data ? data : 'N/A';
+                    } 
+                },
+                { data: 'approved_at', title: 'Approved At', render: function(data) {
+                        return data ? data : 'N/A';
+                    } 
+                },
+                { data: 'approved_by', title: 'Approved By', render: function(data) {    // Display the approver's name
+                        return data ? data : 'N/A';
+                    } 
+                },
             ],
             data: []
         });
-
-        // Default line chart data
-        var defaultLineData = {
-            labels  : ['Total Drawings', 'Scope', 'Submitted', 'Approved'],
-            datasets: [
-                {
-                    label               : 'Drawing Data',
-                    backgroundColor     : 'rgba(60,141,188,0.9)',
-                    borderColor         : 'rgba(60,141,188,0.8)',
-                    pointRadius         : false,
-                    pointColor          : '#3b8bba',
-                    pointStrokeColor    : 'rgba(60,141,188,1)',
-                    pointHighlightFill  : '#fff',
-                    pointHighlightStroke: 'rgba(60,141,188,1)',
-                    data                : [0, 0, 0, 0]
-                }
-            ]
-        };
-
-        var lineChartOptions = {
-            maintainAspectRatio : false,
-            responsive : true,
-            legend: {
-                display: false
-            },
-            scales: {
-                xAxes: [{
-                    gridLines : {
-                        display : true,
-                    }
-                }],
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: true // Ensure the Y-axis starts at zero
-                    },
-                    gridLines : {
-                        display : true,
-                    }
-                }]
-            },
-            datasetFill: false
-        };
-
-        // Default bar chart data
-        var defaultBarData = {
-            labels  : ['Scope Drawings', 'Submitted Drawings', 'Approved Drawings'], // Updated labels
-            datasets: [
-                {
-                    label               : 'Count',
-                    backgroundColor     : ['rgba(60,141,188,0.9)', 'rgba(210, 214, 222, 1)', 'rgba(0, 166, 90, 0.9)'],
-                    borderColor         : ['rgba(60,141,188,0.8)', 'rgba(210, 214, 222, 0.8)', 'rgba(0, 166, 90, 0.8)'],
-                    data                : [0, 0, 0] // Updated default data
-                }
-            ]
-        };
-
-        var barChartOptions = {
-            maintainAspectRatio : false,
-            responsive : true,
-            legend: {
-                display: true
-            },
-            scales: {
-                xAxes: [{
-                    gridLines : {
-                        display : true,
-                    }
-                }],
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: true // Ensure the Y-axis starts at zero
-                    },
-                    gridLines : {
-                        display : true,
-                    }
-                }]
-            }
-        };
-
-        function updateLineChart(data) {
-            if (lineChart) {
-                lineChart.destroy(); // Destroy the old chart before creating a new one
-            }
-
-            lineChart = new Chart(lineChartCanvas, {
-                type: 'line',
-                data: data,
-                options: lineChartOptions
-            });
-        }
-
-        function updateBarChart(data) {
-            if (barChart) {
-                barChart.destroy(); // Destroy the old chart before creating a new one
-            }
-
-            barChart = new Chart(barChartCanvas, {
-                type: 'bar',
-                data: data,
-                options: barChartOptions
-            });
-        }
-
-        // Initialize the charts with default data
-        updateLineChart(defaultLineData);
-        updateBarChart(defaultBarData);
 
         // Handle card clicks
         $('.clickable-card').on('click', function () {
             var drawingId = $(this).data('id');
             var drawingName = $(this).data('name');
+            var totalDrawings = $(this).data('total-drawings');
+            var totalScope = $(this).data('total-scope');
+            var totalSubmitted = $(this).data('total-submitted');
+            var totalApproved = $(this).data('total-approved');
 
-            // Update line chart data
-            var lineChartData = {
-                labels  : ['Total Drawings', 'Scope', 'Submitted', 'Approved'],
-                datasets: [
-                    {
-                        label               : drawingName,
-                        backgroundColor     : 'rgba(60,141,188,0.9)',
-                        borderColor         : 'rgba(60,141,188,0.8)',
-                        pointRadius         : false,
-                        pointColor          : '#3b8bba',
-                        pointStrokeColor    : 'rgba(60,141,188,1)',
-                        pointHighlightFill  : '#fff',
-                        pointHighlightStroke: 'rgba(60,141,188,1)',
-                        fill                : false,
-                        data                : [
-                            $(this).data('drawings'), 
-                            $(this).data('scope') || 0, 
-                            $(this).data('submitted') || 0, 
-                            $(this).data('approved') || 0
-                        ]
-                    }
-                ]
-            };
-
-            // Fetch data for the bar chart
+            // Fetch data for the charts and DataTable
             $.ajax({
-                url: '/drawings/' + drawingId, // Using the resource route's show method
+                url: '/drawings/' + drawingId,
                 method: 'GET',
                 success: function(response) {
                     // Update the DataTable with new data
                     dataTable.clear().rows.add(response.details).draw();
+
                     // Update the charts with the new data
+                    var lineChartData = {
+                        labels  : ['Total Drawings', 'Scope', 'Submitted', 'Approved'],
+                        datasets: [
+                            {
+                                label               : drawingName,
+                                backgroundColor     : 'rgba(60,141,188,0.9)',
+                                borderColor         : 'rgba(60,141,188,0.8)',
+                                pointRadius         : false,
+                                pointColor          : '#3b8bba',
+                                pointStrokeColor    : 'rgba(60,141,188,1)',
+                                pointHighlightFill  : '#fff',
+                                pointHighlightStroke: 'rgba(60,141,188,1)',
+                                fill                : false,
+                                data                : [
+                                    totalDrawings, 
+                                    response.scopeCount, 
+                                    response.submittedCount, 
+                                    response.approvedCount
+                                ]
+                            }
+                        ]
+                    };
+
                     var barChartData = {
                         labels: ['Scope Drawings', 'Submitted Drawings', 'Approved Drawings'],
                         datasets: [
@@ -294,13 +206,81 @@
                         ]
                     };
 
-                    // Update the charts with the new data
                     updateLineChart(lineChartData);
                     updateBarChart(barChartData);
                 }
             });
         });
+
+        function updateLineChart(data) {
+            if (lineChart) {
+                lineChart.destroy();
+            }
+
+            lineChart = new Chart(lineChartCanvas, {
+                type: 'line',
+                data: data,
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    legend: {
+                        display: false
+                    },
+                    scales: {
+                        xAxes: [{
+                            gridLines: {
+                                display: true,
+                            }
+                        }],
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            },
+                            gridLines: {
+                                display: true,
+                            }
+                        }]
+                    }
+                }
+            });
+        }
+
+        function updateBarChart(data) {
+            if (barChart) {
+                barChart.destroy();
+            }
+
+            barChart = new Chart(barChartCanvas, {
+                type: 'bar',
+                data: data,
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    legend: {
+                        display: true
+                    },
+                    scales: {
+                        xAxes: [{
+                            gridLines: {
+                                display: true,
+                            }
+                        }],
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            },
+                            gridLines: {
+                                display: true,
+                            }
+                        }]
+                    }
+                }
+            });
+        }
     });
 </script>
 @endpush
+
+
+
 
