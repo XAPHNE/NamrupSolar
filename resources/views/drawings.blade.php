@@ -65,7 +65,10 @@
         <div class="col-12">
             <div class="card card-info">
                 <div class="card-header">
-                    <h3 class="card-title">Drawing Details</h3>
+                    <h3 class="d-inline">Drawing Details</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-default" data-toggle="modal" data-target="#addDrawingModal" id="addNewDrawing"><i class="fas fa-plus"></i> Add New Drawing</button>
+                    </div>
                 </div>
                 <div class="card-body">
                     <table id="drawingDetailsTable" class="table table-bordered table-striped">
@@ -92,11 +95,128 @@
             </div>
         </div>
     </div>
+
+    <!-- Add Drawing Modal -->
+    <div class="modal fade" id="addDrawingModal" tabindex="-1" role="dialog" aria-labelledby="addDrawingModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addDrawingModalLabel">Add New Drawing</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="addDrawingForm" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="drawing_id">Drawing Category</label>
+                            <select class="form-control" id="drawing_id" name="drawing_id" required>
+                                <option value="">Select</option>
+                                @foreach ($drawings as $drawing)
+                                    <option value="{{ $drawing->id }}">{{ $drawing->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="drawing_details_no">Drawing Number</label>
+                            <input type="text" class="form-control" id="drawing_details_no" name="drawing_details_no" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="drawing_details_name">Drawing Name</label>
+                            <input type="text" class="form-control" id="drawing_details_name" name="drawing_details_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="isScopeDrawing">Is Scope</label>
+                            <input type="checkbox" id="isScopeDrawing" name="isScopeDrawing" data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="success" data-offstyle="secondary">
+                        </div>
+                        <div class="form-group">
+                            <label for="submitted_at">Submitted At</label>
+                            <input type="date" class="form-control datetimepicker-input" id="submitted_at" name="submitted_at" data-toggle="datetimepicker" data-target="#submitted_at" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="drawing_file">Upload Drawing</label>
+                            <input type="file" class="form-control-file" id="drawing_file" name="drawing_file" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-success">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Delete Confirmation</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this drawing?
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDelete">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
 <script>
     $(function () {
+        // Initialize datetimepicker
+        $('#submitted_at').datetimepicker({
+            format: 'YYYY-MM-DD HH:mm:ss'
+        });
+
+        // Initialize Bootstrap Toggle on modal show
+        $('#addDrawingModal').on('shown.bs.modal', function () {
+            $('#isScopeDrawing').bootstrapToggle();
+        });
+
+        $('#addNewDrawing').click(function() {
+            $('#addDrawingModalLabel').text('Add New Ticket');
+            $('#addDrawingForm').trigger('reset');
+            $('#addDrawingModal').modal('show');
+        });
+
+        // Handle form submission
+        $('#addDrawingForm').on('submit', function(e) {
+            e.preventDefault();
+
+            var formData = new FormData(this);
+            var drawingName = $('#drawing_id option:selected').text();
+            var fileName = formData.get('drawing_file').name;
+            var filePath = `drawings/${drawingName}/${fileName}`;
+
+            // Append the filepath to the form data
+            formData.append('filepath', filePath);
+
+            $.ajax({
+                url: '/drawings',  // Ensure this is routed to the correct controller method
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $('#addDrawingModal').modal('hide');
+                    dataTable.ajax.reload();  // Reload the DataTable to show the new drawing detail
+                },
+                error: function(xhr, status, error) {
+                    console.log('Error:', error);  // Handle errors appropriately
+                }
+            });
+        });
+
         var lineChartCanvas = $('#lineChart').get(0).getContext('2d');
         var barChartCanvas = $('#barChart').get(0).getContext('2d');
         var lineChart, barChart;
@@ -115,7 +235,7 @@
                 { data: 'drawing_details_no', title: 'Number' },
                 { data: 'drawing_details_name', title: 'Name' },
                 { data: 'isScopeDrawing', title: 'Scope', render: function(data, type, row) {
-                        return data === 'Yes' ? 'Yes' : 'No';
+                        return data ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-secondary">No</span>';
                     } 
                 },
                 { data: 'submitted_at', title: 'Submitted At', render: function(data) {

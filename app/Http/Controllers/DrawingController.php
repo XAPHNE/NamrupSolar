@@ -30,7 +30,31 @@ class DrawingController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'drawing_id' => 'required|exists:drawings,id',
+            'drawing_details_no' => 'required|string',
+            'drawing_details_name' => 'required|string',
+            'isScopeDrawing' => 'sometimes|boolean',
+            'submitted_at' => 'required|date',
+            'drawing_file' => 'required|file|mimes:pdf,jpg,png',
+        ]);
+    
+        $drawing = Drawing::findOrFail($request->drawing_id);
+        $fileName = $request->file('drawing_file')->getClientOriginalName();
+        $filePath = 'drawings/' . $drawing->name . '/' . $fileName;
+    
+        $request->file('drawing_file')->move(public_path('drawings/' . $drawing->name), $fileName);
+    
+        DrawingDetail::create([
+            'drawing_id' => $request->drawing_id,
+            'drawing_details_no' => $request->drawing_details_no,
+            'drawing_details_name' => $request->drawing_details_name,
+            'isScopeDrawing' => $request->has('isScopeDrawing') ? 1 : 0,
+            'submitted_at' => $request->submitted_at,
+            'filepath' => $filePath,
+        ]);
+    
+        return response()->json(['success' => true]);
     }
 
     /**

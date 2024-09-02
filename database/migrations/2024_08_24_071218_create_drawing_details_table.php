@@ -22,6 +22,7 @@ return new class extends Migration
             $table->unsignedBigInteger('submitted_by')->nullable();
             $table->datetime('approved_at')->nullable();
             $table->unsignedBigInteger('approved_by')->nullable();
+            $table->string('filepath')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
