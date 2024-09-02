@@ -13,15 +13,16 @@ return new class extends Migration
     {
         Schema::create('comments', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('drawing_details_id');
-            $table->datetime('commented_at');
-            $table->unsignedBigInteger('commented_by');
+            $table->unsignedBigInteger('drawing_detail_id'); // Ensure this column is named correctly
             $table->text('comment_body');
-            $table->datetime('resubmitted_at')->nullable();
+            $table->timestamp('commented_at')->nullable();
+            $table->unsignedBigInteger('commented_by');
+            $table->timestamp('resubmitted_at')->nullable();
             $table->timestamps();
             $table->softDeletes();
-
-            $table->foreign('drawing_details_id')->references('id')->on('drawing_details')->onDelete('cascade');
+            
+            // Foreign key constraints
+            $table->foreign('drawing_detail_id')->references('id')->on('drawing_details')->onDelete('cascade');
             $table->foreign('commented_by')->references('id')->on('users')->onDelete('cascade');
         });
     }

@@ -39,32 +39,30 @@ class DrawingController extends Controller
     public function show(string $id)
     {
         if (request()->ajax()) {
-            // Fetch drawing details with related data using Eloquent relationships
             $details = DrawingDetail::with([
-                    'drawing',
-                    'submitter:id,name',
-                    'approver:id,name',
-                    'comments.commenter:id,name'
-                ])
-                ->where('drawing_id', $id)
-                ->get()
-                ->map(function ($detail) {
-                    return [
-                        'drawing_details_name' => $detail->drawing_details_name,
-                        'drawing_details_no' => $detail->drawing_details_no,
-                        'submitted_at' => $detail->submitted_at ?? 'N/A',
-                        'submitted_by' => $detail->submitter->name ?? 'N/A',
-                        'comment_body' => $detail->comments->pluck('comment_body')->implode(', ') ?: 'N/A',
-                        'commented_at' => $detail->comments->pluck('commented_at')->implode(', ') ?: 'N/A',
-                        'commented_by' => $detail->comments->pluck('commenter.name')->implode(', ') ?: 'N/A',
-                        'resubmitted_at' => $detail->comments->pluck('resubmitted_at')->implode(', ') ?: 'N/A',
-                        'approved_at' => $detail->approved_at ?? 'N/A',
-                        'approved_by' => $detail->approver->name ?? 'N/A',
-                        'isScopeDrawing' => $detail->isScopeDrawing ? 'Yes' : 'No'
-                    ];
-                });
+                'drawing',
+                'submitter:id,name',
+                'approver:id,name',
+                'comments.commenter:id,name'
+            ])
+            ->where('drawing_id', $id)
+            ->get()
+            ->map(function ($detail) {
+                return [
+                    'drawing_details_no' => $detail->drawing_details_no,
+                    'drawing_details_name' => $detail->drawing_details_name,
+                    'submitted_at' => $detail->submitted_at ?? 'N/A',
+                    'submitted_by' => $detail->submitter->name ?? 'N/A',
+                    'comment_body' => $detail->comments->pluck('comment_body')->implode(', ') ?: 'N/A',
+                    'commented_at' => $detail->comments->pluck('commented_at')->implode(', ') ?: 'N/A',
+                    'commented_by' => $detail->comments->pluck('commenter.name')->implode(', ') ?: 'N/A',
+                    'resubmitted_at' => $detail->comments->pluck('resubmitted_at')->implode(', ') ?: 'N/A',
+                    'approved_at' => $detail->approved_at ?? 'N/A',
+                    'approved_by' => $detail->approver->name ?? 'N/A',
+                    'isScopeDrawing' => $detail->isScopeDrawing ? 'Yes' : 'No'
+                ];
+            });
     
-            // Count the number of non-null values for each field
             $scopeCount = DrawingDetail::where('drawing_id', $id)->where('isScopeDrawing', true)->count();
             $submittedCount = DrawingDetail::where('drawing_id', $id)->whereNotNull('submitted_at')->count();
             $approvedCount = DrawingDetail::where('drawing_id', $id)->whereNotNull('approved_at')->count();
@@ -73,14 +71,14 @@ class DrawingController extends Controller
                 'scopeCount' => $scopeCount,
                 'submittedCount' => $submittedCount,
                 'approvedCount' => $approvedCount,
-                'details' => $details, // Include the detailed data for the DataTable
+                'details' => $details,
             ]);
         }
     
-        // If it's not an AJAX request, handle the normal show logic here
         $drawing = Drawing::findOrFail($id);
         return view('drawings.show', compact('drawing'));
     }
+    
     
     
     

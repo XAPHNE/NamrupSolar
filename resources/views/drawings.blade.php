@@ -74,13 +74,13 @@
                                 <th>Number</th>
                                 <th>Name</th>
                                 <th>Scope</th>
-                                <th>Submitted At</th>
+                                <th style="min-width: 154px">Submitted At</th>
                                 <th>Submitted By</th>
                                 <th>Comment</th>
-                                <th>Commented At</th>
+                                <th style="min-width: 158px">Commented At</th>
                                 <th>Commented By</th>
-                                <th>Resubmitted At</th>
-                                <th>Approved At</th>
+                                <th style="min-width: 158px">Resubmitted At</th>
+                                <th style="min-width: 154px">Approved At</th>
                                 <th>Approved By</th>
                             </tr>
                         </thead>
@@ -109,7 +109,8 @@
             paging: true,
             searching: true,
             lengthChange: true,
-            autoWidth: true,
+            autoWidth: false,
+            scrollX: true,
             columns: [
                 { data: 'drawing_details_no', title: 'Number' },
                 { data: 'drawing_details_name', title: 'Name' },
@@ -126,19 +127,19 @@
                     } 
                 },
                 { data: 'comment_body', title: 'Comment', render: function(data) { // New comment column
-                        return data ? data : 'N/A';
+                        return data ? data.replace(/, /g, ',<br>') : 'N/A';
                     }
                 },
                 { data: 'commented_at', title: 'Commented At', render: function(data) {
-                        return data ? data : 'N/A';
+                        return data ? data.replace(/, /g, ',<br>') : 'N/A';
                     } 
                 },
                 { data: 'commented_by', title: 'Commented By', render: function(data) {  // Display the commenter's name
-                        return data ? data : 'N/A';
+                        return data ? data.replace(/, /g, ',<br>') : 'N/A';
                     } 
                 },
                 { data: 'resubmitted_at', title: 'Resubmitted At', render: function(data) {
-                        return data ? data : 'N/A';
+                        return data ? data.replace(/, /g, ',<br>') : 'N/A';
                     } 
                 },
                 { data: 'approved_at', title: 'Approved At', render: function(data) {
@@ -150,7 +151,7 @@
                     } 
                 },
             ],
-            data: []
+            data: []  // Initialize with empty data
         });
 
         // Handle card clicks
@@ -167,47 +168,60 @@
                 url: '/drawings/' + drawingId,
                 method: 'GET',
                 success: function(response) {
-                    // Update the DataTable with new data
-                    dataTable.clear().rows.add(response.details).draw();
+                    // Ensure response.details exists and contains the expected data structure
+                    if (response.details && response.details.length) {
+                        // Update the DataTable with new data
+                        dataTable.clear().rows.add(response.details).draw();
 
-                    // Update the charts with the new data
-                    var lineChartData = {
-                        labels  : ['Total Drawings', 'Scope', 'Submitted', 'Approved'],
-                        datasets: [
-                            {
-                                label               : drawingName,
-                                backgroundColor     : 'rgba(60,141,188,0.9)',
-                                borderColor         : 'rgba(60,141,188,0.8)',
-                                pointRadius         : false,
-                                pointColor          : '#3b8bba',
-                                pointStrokeColor    : 'rgba(60,141,188,1)',
-                                pointHighlightFill  : '#fff',
-                                pointHighlightStroke: 'rgba(60,141,188,1)',
-                                fill                : false,
-                                data                : [
-                                    totalDrawings, 
-                                    response.scopeCount, 
-                                    response.submittedCount, 
-                                    response.approvedCount
-                                ]
-                            }
-                        ]
-                    };
+                        // Prepare the line chart data
+                        var lineChartData = {
+                            labels  : ['Total Drawings', 'Scope', 'Submitted', 'Approved'],
+                            datasets: [
+                                {
+                                    label               : drawingName,
+                                    backgroundColor     : 'rgba(60,141,188,0.9)',
+                                    borderColor         : 'rgba(60,141,188,0.8)',
+                                    pointRadius         : false,
+                                    pointColor          : '#3b8bba',
+                                    pointStrokeColor    : 'rgba(60,141,188,1)',
+                                    pointHighlightFill  : '#fff',
+                                    pointHighlightStroke: 'rgba(60,141,188,1)',
+                                    fill                : false,
+                                    data                : [
+                                        totalDrawings, 
+                                        response.scopeCount, 
+                                        response.submittedCount, 
+                                        response.approvedCount
+                                    ]
+                                }
+                            ]
+                        };
 
-                    var barChartData = {
-                        labels: ['Scope Drawings', 'Submitted Drawings', 'Approved Drawings'],
-                        datasets: [
-                            {
-                                label               : 'Count',
-                                backgroundColor     : ['rgba(60,141,188,0.9)', 'rgba(210, 214, 222, 1)', 'rgba(0, 166, 90, 0.9)'],
-                                borderColor         : ['rgba(60,141,188,0.8)', 'rgba(210, 214, 222, 0.8)', 'rgba(0, 166, 90, 0.8)'],
-                                data                : [response.scopeCount, response.submittedCount, response.approvedCount]
-                            }
-                        ]
-                    };
+                        // Prepare the bar chart data
+                        var barChartData = {
+                            labels: ['Scope Drawings', 'Submitted Drawings', 'Approved Drawings'],
+                            datasets: [
+                                {
+                                    label               : 'Count',
+                                    backgroundColor     : ['rgba(60,141,188,0.9)', 'rgba(210, 214, 222, 1)', 'rgba(0, 166, 90, 0.9)'],
+                                    borderColor         : ['rgba(60,141,188,0.8)', 'rgba(210, 214, 222, 0.8)', 'rgba(0, 166, 90, 0.8)'],
+                                    data                : [response.scopeCount, response.submittedCount, response.approvedCount]
+                                }
+                            ]
+                        };
 
-                    updateLineChart(lineChartData);
-                    updateBarChart(barChartData);
+                        // Update the charts with the new data
+                        updateLineChart(lineChartData);
+                        updateBarChart(barChartData);
+                    } else {
+                        // Handle case where there is no data
+                        dataTable.clear().draw();  // Clear the table if no details are returned
+                        updateLineChart({ datasets: [] });  // Clear the line chart
+                        updateBarChart({ datasets: [] });  // Clear the bar chart
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.log('Error:', error);  // Log any errors for debugging
                 }
             });
         });
@@ -280,6 +294,7 @@
     });
 </script>
 @endpush
+
 
 
 

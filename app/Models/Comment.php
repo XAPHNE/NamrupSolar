@@ -11,16 +11,16 @@ class Comment extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'drawing_details_id',
+        'drawing_detail_id',  // Make sure this matches the column name in the migration
+        'comment_body',
         'commented_at',
         'commented_by',
-        'comment_body',
         'resubmitted_at',
     ];
 
     public function drawingDetail()
     {
-        return $this->belongsTo(DrawingDetail::class);
+        return $this->belongsTo(DrawingDetail::class, 'drawing_detail_id');
     }
 
     public function commenter()
