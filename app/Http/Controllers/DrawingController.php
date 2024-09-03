@@ -41,9 +41,9 @@ class DrawingController extends Controller
     
         $drawing = Drawing::findOrFail($request->drawing_id);
         $fileName = $request->file('drawing_file')->getClientOriginalName();
-        $filePath = 'drawings/' . $drawing->name . '/' . $fileName;
+        $filePath = 'drawing/' . $drawing->name . '/' . $fileName;
     
-        $request->file('drawing_file')->move(public_path('drawings/' . $drawing->name), $fileName);
+        $request->file('drawing_file')->move(public_path('drawing/' . $drawing->name), $fileName);
     
         DrawingDetail::create([
             'drawing_id' => $request->drawing_id,

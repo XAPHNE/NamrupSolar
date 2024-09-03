@@ -128,11 +128,11 @@
                         </div>
                         <div class="form-group">
                             <label for="isScopeDrawing">Is Scope</label>
-                            <input type="checkbox" id="isScopeDrawing" name="isScopeDrawing" data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="success" data-offstyle="secondary">
+                            <input type="checkbox" id="isScopeDrawing" name="isScopeDrawing" value="1" data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="success" data-offstyle="secondary">
                         </div>
                         <div class="form-group">
                             <label for="submitted_at">Submitted At</label>
-                            <input type="date" class="form-control datetimepicker-input" id="submitted_at" name="submitted_at" data-toggle="datetimepicker" data-target="#submitted_at" required>
+                            <input type="date" class="form-control" id="submitted_at" name="submitted_at" required>
                         </div>
                         <div class="form-group">
                             <label for="drawing_file">Upload Drawing</label>
@@ -173,11 +173,6 @@
 @push('scripts')
 <script>
     $(function () {
-        // Initialize datetimepicker
-        $('#submitted_at').datetimepicker({
-            format: 'YYYY-MM-DD HH:mm:ss'
-        });
-
         // Initialize Bootstrap Toggle on modal show
         $('#addDrawingModal').on('shown.bs.modal', function () {
             $('#isScopeDrawing').bootstrapToggle();
