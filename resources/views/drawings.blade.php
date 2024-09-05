@@ -71,20 +71,24 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <table id="drawingDetailsTable" class="table table-bordered table-striped">
+                    <table id="drawingDetailsTable" class="display nowrap table table-bordered table-hover">
                         <thead>
                             <tr>
+                                <th>#</th>
                                 <th>Number</th>
                                 <th>Name</th>
                                 <th>Scope</th>
-                                <th style="min-width: 154px">Submitted At</th>
+                                <th>Submitted At</th>
                                 <th>Submitted By</th>
                                 <th>Comment</th>
-                                <th style="min-width: 158px">Commented At</th>
+                                <th>Commented At</th>
                                 <th>Commented By</th>
-                                <th style="min-width: 158px">Resubmitted At</th>
-                                <th style="min-width: 154px">Approved At</th>
+                                <th>Resubmitted At</th>
+                                <th>Approved At</th>
                                 <th>Approved By</th>
+                                <th>Drawing File</th>
+                                <th>Reports</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -96,24 +100,25 @@
         </div>
     </div>
 
-    <!-- Add Drawing Modal -->
-    <div class="modal fade" id="addDrawingModal" tabindex="-1" role="dialog" aria-labelledby="addDrawingModalLabel" aria-hidden="true">
+    <!-- Drawing Modal -->
+    <div class="modal fade" id="drawingModal" tabindex="-1" role="dialog" aria-labelledby="drawingModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addDrawingModalLabel">Add New Drawing</h5>
+                    <h5 class="modal-title" id="drawingModalLabel">Add New Drawing</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <form id="addDrawingForm" enctype="multipart/form-data">
+                <form id="drawingForm">
                     @csrf
                     <div class="modal-body">
+                        <input type="hidden" id="drawingId" name="drawingId">
                         <div class="form-group">
                             <label for="drawing_id">Drawing Category</label>
                             <select class="form-control" id="drawing_id" name="drawing_id" required>
-                                <option value="">Select</option>
-                                @foreach ($drawings as $drawing)
+                                <option value="">Select Category</option>
+                                @foreach($drawings as $drawing)
                                     <option value="{{ $drawing->id }}">{{ $drawing->name }}</option>
                                 @endforeach
                             </select>
@@ -128,15 +133,19 @@
                         </div>
                         <div class="form-group">
                             <label for="isScopeDrawing">Is Scope</label>
-                            <input type="checkbox" id="isScopeDrawing" name="isScopeDrawing" value="1" data-toggle="toggle" data-on="Yes" data-off="No" data-onstyle="success" data-offstyle="secondary">
+                            <input type="checkbox" id="isScopeDrawing" name="isScopeDrawing" data-on="Yes" data-off="No" data-onstyle="success" data-offstyle="secondary" value="1" data-toggle="toggle">
                         </div>
                         <div class="form-group">
                             <label for="submitted_at">Submitted At</label>
-                            <input type="date" class="form-control" id="submitted_at" name="submitted_at" required>
+                            <input type="datetime-local" class="form-control" id="submitted_at" name="submitted_at" required>
                         </div>
                         <div class="form-group">
                             <label for="drawing_file">Upload Drawing</label>
-                            <input type="file" class="form-control-file" id="drawing_file" name="drawing_file" required>
+                            <input type="file" class="form-control-file" id="drawing_file" name="drawing_file">
+                        </div>
+                        <div class="form-group">
+                            <label for="report_file">Upload Report</label>
+                            <input type="file" class="form-control-file" id="report_file" name="report_file">
                         </div>
                     </div>
                     <div class="modal-footer justify-content-between">
@@ -172,102 +181,227 @@
 
 @push('scripts')
 <script>
-    $(function () {
-        // Initialize Bootstrap Toggle on modal show
-        $('#addDrawingModal').on('shown.bs.modal', function () {
-            $('#isScopeDrawing').bootstrapToggle();
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+
+    $(document).ready(function() {
+        var table = $('#drawingDetailsTable').DataTable({
+            processing: true,
+            serverSide: true,
+            scrollX: true,
+            ajax: "{{ route('drawings.index') }}",
+            columns: [
+                { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+                { data: 'drawing_details_no', name: 'drawing_details_no' },
+                { data: 'drawing_details_name', name: 'drawing_details_name' },
+                { data: 'isScopeDrawing', name: 'isScopeDrawing', render: function(data) {
+                    return data ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-secondary">No</span>';
+                }},
+                { data: 'submitted_at', name: 'submitted_at' },
+                { data: 'submitter.name', name: 'submitted_by' },
+                { data: 'comment_body', name: 'comment_body', render: function(data) {
+                    return data ? data.replace(/, /g, ',<br>') : 'N/A';
+                }},
+                { data: 'commented_at', name: 'commented_at', render: function(data) {
+                    return data ? data.replace(/, /g, ',<br>') : 'N/A';
+                }},
+                { data: 'commenter.name', name: 'commented_by', render: function(data) {
+                    return data ? data : 'N/A';
+                }},
+                { data: 'resubmitted_at', name: 'resubmitted_at', render: function(data) {
+                    return data ? data : 'N/A';
+                }},
+                { data: 'approved_at', name: 'approved_at', render: function(data) {
+                    return data ? data : 'N/A';
+                }},
+                { data: 'approver.name', name: 'approved_by', render: function(data) {
+                    return data ? data : 'N/A';
+                }},
+                { 
+                    data: 'drawing_file_path', 
+                    name: 'drawing_file_path',
+                    render: function(data) {
+                        if (data !== 'N/A') {
+                            return data;  // Data already contains HTML link generated in the controller
+                        }
+                        return 'N/A';
+                    }
+                },
+                { 
+                    data: 'report_file_path', 
+                    name: 'report_file_path',
+                    render: function(data) {
+                        if (data !== 'N/A') {
+                            return data;  // Data already contains HTML link generated in the controller
+                        }
+                        return 'N/A';
+                    }
+                },
+                { data: 'action', name: 'action', orderable: false, searchable: false }
+            ],
+            data: []  // Initialize with empty data
         });
 
+        // Add New Drawing
         $('#addNewDrawing').click(function() {
-            $('#addDrawingModalLabel').text('Add New Ticket');
-            $('#addDrawingForm').trigger('reset');
-            $('#addDrawingModal').modal('show');
+            $('#drawingModalLabel').text('Add New Drawing');
+            $('#drawingForm').trigger('reset');
+            $('#drawingModal').modal('show');
         });
 
-        // Handle form submission
-        $('#addDrawingForm').on('submit', function(e) {
+        // Form Submission for Create/Update
+        $('#drawingForm').submit(function(e) {
             e.preventDefault();
-
             var formData = new FormData(this);
-            var drawingName = $('#drawing_id option:selected').text();
-            var fileName = formData.get('drawing_file').name;
-            var filePath = `drawings/${drawingName}/${fileName}`;
-
-            // Append the filepath to the form data
-            formData.append('filepath', filePath);
+            var url = $('#drawingId').val() ? "{{ route('drawings.update', ':id') }}".replace(':id', $('#drawingId').val()) : "{{ route('drawings.store') }}";
 
             $.ajax({
-                url: '/drawings',  // Ensure this is routed to the correct controller method
-                method: 'POST',
+                type: 'POST',
+                url: url,
                 data: formData,
-                processData: false,
                 contentType: false,
+                processData: false,
                 success: function(response) {
-                    $('#addDrawingModal').modal('hide');
-                    dataTable.ajax.reload();  // Reload the DataTable to show the new drawing detail
+                    $('#drawingModal').modal('hide');
+                    table.ajax.reload();
+                    Swal.fire('Success', response.message, 'success');
                 },
-                error: function(xhr, status, error) {
-                    console.log('Error:', error);  // Handle errors appropriately
+                error: function(response) {
+                    Swal.fire('Error', 'Something went wrong!', 'error');
                 }
             });
         });
 
+        // Edit Drawing
+        $('body').on('click', '.editDrawing', function() {
+            var drawingId = $(this).data('id');
+            $.get("{{ route('drawings.index') }}" + '/' + drawingId + '/edit', function(data) {
+                $('#drawingModalLabel').text('Edit Drawing');
+                $('#drawingModal').modal('show');
+                $('#drawingId').val(data.id);
+                $('#drawing_id').val(data.drawing_id);
+                $('#drawing_details_no').val(data.drawing_details_no);
+                $('#drawing_details_name').val(data.drawing_details_name);
+                $('#isScopeDrawing').bootstrapToggle(data.isScopeDrawing ? 'on' : 'off');
+                $('#submitted_at').val(data.submitted_at);
+            });
+        });
+
+        // Delete Drawing
+        $('body').on('click', '.deleteDrawing', function() {
+            var drawingId = $(this).data('id');
+            $('#deleteModal').modal('show');
+
+            $('#confirmDelete').click(function() {
+                $.ajax({
+                    type: 'DELETE',
+                    url: "{{ route('drawings.destroy', ':id') }}".replace(':id', drawingId),
+                    success: function(response) {
+                        $('#deleteModal').modal('hide');
+                        table.ajax.reload();
+                        Swal.fire('Deleted!', response.message, 'success');
+                    },
+                    error: function(response) {
+                        Swal.fire('Error', 'Something went wrong!', 'error');
+                    }
+                });
+            });
+        });
+
+        // Initialize Bootstrap Toggle in Modals
+        $('#drawingModal').on('shown.bs.modal', function() {
+            $('#isScopeDrawing').bootstrapToggle();
+        });
+    });
+
+    $(function () {
+
         var lineChartCanvas = $('#lineChart').get(0).getContext('2d');
         var barChartCanvas = $('#barChart').get(0).getContext('2d');
         var lineChart, barChart;
-        var dataTable;
+        // var dataTable;
 
-        // Initialize DataTable
-        dataTable = $('#drawingDetailsTable').DataTable({
-            processing: true,
-            serverSide: false,
-            paging: true,
-            searching: true,
-            lengthChange: true,
-            autoWidth: false,
-            scrollX: true,
-            columns: [
-                { data: 'drawing_details_no', title: 'Number' },
-                { data: 'drawing_details_name', title: 'Name' },
-                { data: 'isScopeDrawing', title: 'Scope', render: function(data, type, row) {
-                        return data ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-secondary">No</span>';
-                    } 
-                },
-                { data: 'submitted_at', title: 'Submitted At', render: function(data) {
-                        return data ? data : 'N/A';
-                    } 
-                },
-                { data: 'submitted_by', title: 'Submitted By', render: function(data) {  // Display the submitter's name
-                        return data ? data : 'N/A';
-                    } 
-                },
-                { data: 'comment_body', title: 'Comment', render: function(data) { // New comment column
-                        return data ? data.replace(/, /g, ',<br>') : 'N/A';
-                    }
-                },
-                { data: 'commented_at', title: 'Commented At', render: function(data) {
-                        return data ? data.replace(/, /g, ',<br>') : 'N/A';
-                    } 
-                },
-                { data: 'commented_by', title: 'Commented By', render: function(data) {  // Display the commenter's name
-                        return data ? data.replace(/, /g, ',<br>') : 'N/A';
-                    } 
-                },
-                { data: 'resubmitted_at', title: 'Resubmitted At', render: function(data) {
-                        return data ? data.replace(/, /g, ',<br>') : 'N/A';
-                    } 
-                },
-                { data: 'approved_at', title: 'Approved At', render: function(data) {
-                        return data ? data : 'N/A';
-                    } 
-                },
-                { data: 'approved_by', title: 'Approved By', render: function(data) {    // Display the approver's name
-                        return data ? data : 'N/A';
-                    } 
-                },
-            ],
-            data: []  // Initialize with empty data
-        });
+        // // Initialize DataTable
+        // dataTable = $('#drawingDetailsTable').DataTable({
+        //     processing: true,
+        //     serverSide: false,
+        //     paging: true,
+        //     searching: true,
+        //     lengthChange: true,
+        //     autoWidth: false,
+        //     scrollX: true,
+        //     columns: [
+        //         { data: 'drawing_details_no', title: 'Number' },
+        //         { data: 'drawing_details_name', title: 'Name' },
+        //         { data: 'isScopeDrawing', title: 'Scope', render: function(data, type, row) {
+        //                 return data ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-secondary">No</span>';
+        //             }
+        //         },
+        //         { data: 'submitted_at', title: 'Submitted At', render: function(data) {
+        //                 return data ? data : 'N/A';
+        //             }
+        //         },
+        //         { data: 'submitted_by', title: 'Submitted By', render: function(data) {
+        //                 return data ? data : 'N/A';
+        //             }
+        //         },
+        //         { data: 'comment_body', title: 'Comment', render: function(data) {
+        //                 return data ? data.replace(/, /g, ',<br>') : 'N/A';
+        //             }
+        //         },
+        //         { data: 'commented_at', title: 'Commented At', render: function(data) {
+        //                 return data ? data.replace(/, /g, ',<br>') : 'N/A';
+        //             } 
+        //         },
+        //         { data: 'commented_by', title: 'Commented By', render: function(data) {  // Display the commenter's name
+        //                 return data ? data.replace(/, /g, ',<br>') : 'N/A';
+        //             } 
+        //         },
+        //         { data: 'resubmitted_at', title: 'Resubmitted At', render: function(data) {
+        //                 return data ? data.replace(/, /g, ',<br>') : 'N/A';
+        //             } 
+        //         },
+        //         { data: 'approved_at', title: 'Approved At', render: function(data) {
+        //                 return data ? data : 'N/A';
+        //             } 
+        //         },
+        //         { data: 'approved_by', title: 'Approved By', render: function(data) {    // Display the approver's name
+        //                 return data ? data : 'N/A';
+        //             } 
+        //         },
+        //         { 
+        //             data: 'drawing_file_path', 
+        //             name: 'drawing_file_path',
+        //             render: function(data) {
+        //                 if (data !== 'N/A') {
+        //                     return `<a href="${data}" download class="btn btn-sm btn-success">Download</a>`;
+        //                 }
+        //                 return 'N/A';
+        //             }
+        //         },
+        //         { 
+        //             data: 'report_file_path', 
+        //             name: 'report_file_path',
+        //             render: function(data) {
+        //                 if (data !== 'N/A') {
+        //                     return `<a href="${data}" download class="btn btn-sm btn-success">Download</a>`;
+        //                 }
+        //                 return 'N/A';
+        //             }
+        //         },
+        //         { data: null, title: 'Actions', render: function(data, type, row) {
+        //                 return `
+        //                     <button class="btn btn-warning btn-sm edit-btn" data-id="${row.id}">Edit</button>
+        //                     <button class="btn btn-danger btn-sm delete-btn" data-id="${row.id}">Delete</button>
+        //                 `;
+        //             }
+        //         }
+        //     ],
+        //     data: []  // Initialize with empty data
+        // });
 
         // Handle card clicks
         $('.clickable-card').on('click', function () {
