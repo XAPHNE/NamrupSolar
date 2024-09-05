@@ -4,15 +4,66 @@ namespace App\Http\Controllers;
 
 use App\Models\Drawing;
 use App\Models\DrawingDetail;
+use App\Models\DrawingFile;
+use App\Models\ReportFile;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Yajra\DataTables\DataTables;
 
 class DrawingController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        if ($request->ajax()) {
+            $data = DrawingDetail::with([
+                'drawing', 
+                'submitter', 
+                'approver', 
+                'drawingFiles', 
+                'reportFiles', 
+                'comments.commenter:id,name' // Load comments and commenter relationships
+            ])->get();
+    
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('comment_body', function($row) {
+                    return $row->comments->pluck('comment_body')->implode(', ') ?: 'N/A';
+                })
+                ->addColumn('commented_at', function($row) {
+                    return $row->comments->pluck('commented_at')->implode(', ') ?: 'N/A';
+                })
+                ->addColumn('commented_by', function($row) {
+                    return $row->comments->pluck('commenter.name')->implode(', ') ?: 'N/A';
+                })
+                ->addColumn('drawing_file_path', function($row) {
+                    if ($row->drawingFiles->isNotEmpty()) {
+                        return $row->drawingFiles->pluck('file_path')->map(function($file) {
+                            return '<a href="' . asset($file) . '" target="_blank">Download/View</a>';
+                        })->implode('<br>');
+                    }
+                    return 'N/A';
+                })
+                ->addColumn('report_file_path', function($row) {
+                    if ($row->reportFiles->isNotEmpty()) {
+                        return $row->reportFiles->pluck('file_path')->map(function($file) {
+                            return '<a href="' . asset($file) . '" target="_blank">Download/View</a>';
+                        })->implode('<br>');
+                    }
+                    return 'N/A';
+                })
+                ->addColumn('action', function($row) {
+                    $btn = '<a href="javascript:void(0)" data-id="'.$row->id.'" class="edit btn btn-warning btn-sm editDrawing"><i class="fas fa-edit"></i></a>';
+                    $btn .= ' <a href="javascript:void(0)" data-id="'.$row->id.'" class="delete btn btn-danger btn-sm deleteDrawing"><i class="fas fa-trash-alt"></i></a>';
+                    return $btn;
+                })
+                ->rawColumns(['comment_body', 'commented_at', 'drawing_file_path', 'report_file_path', 'action'])
+                ->make(true);
+        }
+    
         $drawings = Drawing::all();
         return view('drawings', compact('drawings'));
     }
@@ -37,24 +88,41 @@ class DrawingController extends Controller
             'isScopeDrawing' => 'sometimes|boolean',
             'submitted_at' => 'required|date',
             'drawing_file' => 'required|file|mimes:pdf,jpg,png',
+            'report_file' => 'required|file|mimes:pdf,jpg,png',
         ]);
-    
+
         $drawing = Drawing::findOrFail($request->drawing_id);
-        $fileName = $request->file('drawing_file')->getClientOriginalName();
-        $filePath = 'drawing/' . $drawing->name . '/' . $fileName;
-    
-        $request->file('drawing_file')->move(public_path('drawing/' . $drawing->name), $fileName);
-    
-        DrawingDetail::create([
+
+        $drawingDetail = DrawingDetail::create([
             'drawing_id' => $request->drawing_id,
             'drawing_details_no' => $request->drawing_details_no,
             'drawing_details_name' => $request->drawing_details_name,
             'isScopeDrawing' => $request->has('isScopeDrawing') ? 1 : 0,
             'submitted_at' => $request->submitted_at,
-            'filepath' => $filePath,
+            'submitted_by' => Auth::id(),  // Automatically capture logged-in user
         ]);
-    
-        return response()->json(['success' => true]);
+
+        // Handle Drawing file upload
+        if ($request->hasFile('drawing_file')) {
+            $drawingFileName = time() . '_' . $request->file('drawing_file')->getClientOriginalName();
+            $request->file('drawing_file')->move(public_path('drawing/' . $drawing->name), $drawingFileName);
+            DrawingFile::create([
+                'drawing_detail_id' => $drawingDetail->id,
+                'file_path' => 'drawing/' . $drawing->name . '/' . $drawingFileName,
+            ]);
+        }
+
+        // Handle Report file upload
+        if ($request->hasFile('report_file')) {
+            $reportFileName = time() . '_' . $request->file('report_file')->getClientOriginalName();
+            $request->file('report_file')->move(public_path('report/' . $drawing->name), $reportFileName);
+            ReportFile::create([
+                'drawing_detail_id' => $drawingDetail->id,
+                'file_path' => 'report/' . $drawing->name . '/' . $reportFileName,
+            ]);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Drawing created successfully']);
     }
 
     /**
@@ -62,45 +130,7 @@ class DrawingController extends Controller
      */
     public function show(string $id)
     {
-        if (request()->ajax()) {
-            $details = DrawingDetail::with([
-                'drawing',
-                'submitter:id,name',
-                'approver:id,name',
-                'comments.commenter:id,name'
-            ])
-            ->where('drawing_id', $id)
-            ->get()
-            ->map(function ($detail) {
-                return [
-                    'drawing_details_no' => $detail->drawing_details_no,
-                    'drawing_details_name' => $detail->drawing_details_name,
-                    'submitted_at' => $detail->submitted_at ?? 'N/A',
-                    'submitted_by' => $detail->submitter->name ?? 'N/A',
-                    'comment_body' => $detail->comments->pluck('comment_body')->implode(', ') ?: 'N/A',
-                    'commented_at' => $detail->comments->pluck('commented_at')->implode(', ') ?: 'N/A',
-                    'commented_by' => $detail->comments->pluck('commenter.name')->implode(', ') ?: 'N/A',
-                    'resubmitted_at' => $detail->comments->pluck('resubmitted_at')->implode(', ') ?: 'N/A',
-                    'approved_at' => $detail->approved_at ?? 'N/A',
-                    'approved_by' => $detail->approver->name ?? 'N/A',
-                    'isScopeDrawing' => $detail->isScopeDrawing ? 'Yes' : 'No'
-                ];
-            });
-    
-            $scopeCount = DrawingDetail::where('drawing_id', $id)->where('isScopeDrawing', true)->count();
-            $submittedCount = DrawingDetail::where('drawing_id', $id)->whereNotNull('submitted_at')->count();
-            $approvedCount = DrawingDetail::where('drawing_id', $id)->whereNotNull('approved_at')->count();
-    
-            return response()->json([
-                'scopeCount' => $scopeCount,
-                'submittedCount' => $submittedCount,
-                'approvedCount' => $approvedCount,
-                'details' => $details,
-            ]);
-        }
-    
-        $drawing = Drawing::findOrFail($id);
-        return view('drawings.show', compact('drawing'));
+        //
     }
     
     
@@ -121,7 +151,56 @@ class DrawingController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        // Validate incoming request
+        $request->validate([
+            'drawing_details_no' => 'required|string',
+            'drawing_details_name' => 'required|string',
+            'isScopeDrawing' => 'sometimes|boolean',
+            'submitted_at' => 'required|date',
+            'drawing_file' => 'nullable|file|mimes:pdf,jpg,png',
+            'report_file' => 'nullable|file|mimes:pdf,jpg,png',
+        ]);
+
+        // Find the drawing detail
+        $drawingDetail = DrawingDetail::findOrFail($id);
+        
+        // Update fields
+        $drawingDetail->update([
+            'drawing_details_no' => $request->drawing_details_no,
+            'drawing_details_name' => $request->drawing_details_name,
+            'isScopeDrawing' => $request->has('isScopeDrawing'),
+            'submitted_at' => $request->submitted_at,
+            'approved_by' => Auth::id(),
+            'approved_at' => Carbon::now()
+        ]);
+
+        // Handle Drawing file upload (if new file provided)
+        if ($request->hasFile('drawing_file')) {
+            $drawingFileName = time() . '_' . $request->file('drawing_file')->getClientOriginalName();
+            $drawing = Drawing::findOrFail($drawingDetail->drawing_id);  // Find drawing category
+            $request->file('drawing_file')->move(public_path('drawing/' . $drawing->name), $drawingFileName);
+            
+            // Save to DrawingFile model
+            DrawingFile::create([
+                'drawing_detail_id' => $drawingDetail->id,
+                'file_path' => 'drawing/' . $drawing->name . '/' . $drawingFileName,
+            ]);
+        }
+
+        // Handle Report file upload (if new file provided)
+        if ($request->hasFile('report_file')) {
+            $reportFileName = time() . '_' . $request->file('report_file')->getClientOriginalName();
+            $drawing = Drawing::findOrFail($drawingDetail->drawing_id);
+            $request->file('report_file')->move(public_path('report/' . $drawing->name), $reportFileName);
+            
+            // Save to ReportFile model
+            ReportFile::create([
+                'drawing_detail_id' => $drawingDetail->id,
+                'file_path' => 'report/' . $drawing->name . '/' . $reportFileName,
+            ]);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Drawing updated successfully']);
     }
 
     /**
@@ -129,6 +208,8 @@ class DrawingController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $drawingDetail = DrawingDetail::findOrFail($id);
+        $drawingDetail->delete();
+        return response()->json(['success' => true, 'message' => 'Drawing deleted successfully']);
     }
 }
