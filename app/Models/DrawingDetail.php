@@ -26,6 +26,16 @@ class DrawingDetail extends Model
         return $this->belongsTo(Drawing::class);
     }
 
+    public function drawingFiles()
+    {
+        return $this->hasMany(DrawingFile::class);
+    }
+
+    public function reportFiles()
+    {
+        return $this->hasMany(ReportFile::class);
+    }
+
     public function submitter()
     {
         return $this->belongsTo(User::class, 'submitted_by');
