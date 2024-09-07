@@ -176,6 +176,12 @@
 
 @push('scripts')
 <script>
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+    
     $(document).ready(function () {
         // Initialize DataTable with scrollX enabled
         var table = $('#drawingDetailsTable').DataTable({
@@ -256,7 +262,7 @@
                             detail.approved_by,  // Approved By
                             drawingFileLink,  // Drawing file download link
                             reportFileLink,  // Report file download link
-                            `<button class="btn btn-danger" onclick="deleteDrawingDetail(${detail.id})">Delete</button>`
+                            `<button class="btn btn-danger delete-drawing" data-id="${detail.id}">Delete</button>`
                         ]).draw();
                     });
 
