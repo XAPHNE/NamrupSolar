@@ -15,10 +15,6 @@
                 <div class="card shadow-sm bg-info clickable-card" 
                     data-id="{{ $drawing->id }}" 
                     data-name="{{ $drawing->name }}" 
-                    data-total-drawings="{{ $drawing->total_drawings }}" 
-                    data-total-scope="{{ $drawing->total_drawings_scope }}" 
-                    data-total-submitted="{{ $drawing->total_submitted_drawings }}" 
-                    data-total-approved="{{ $drawing->total_approved_drawings }}"
                     style="height: 60px; margin: 0 auto;">
                     <div class="p-3 text-center">
                         <p class="text-center mb-0" style="font-size: 14px;">{{ $drawing->name }}</p>
@@ -32,7 +28,6 @@
     <!-- Charts and DataTable -->
     <div class="row mt-4">
         <div class="col-sm-6">
-            <!-- LINE CHART -->
             <div class="card card-info">
                 <div class="card-header">
                     <h3 class="card-title">Line Chart</h3>
@@ -46,7 +41,6 @@
         </div>
 
         <div class="col-sm-6">
-            <!-- BAR CHART -->
             <div class="card card-info">
                 <div class="card-header">
                     <h3 class="card-title">Bar Chart</h3>
@@ -100,7 +94,7 @@
         </div>
     </div>
 
-    <!-- Drawing Modal -->
+    <!-- Add/Update Drawing Modal -->
     <div class="modal fade" id="drawingModal" tabindex="-1" role="dialog" aria-labelledby="drawingModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -177,374 +171,164 @@
             </div>
         </div>
     </div>
+
 @endsection
 
 @push('scripts')
 <script>
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
-
-    $(document).ready(function() {
+    $(document).ready(function () {
+        // Initialize DataTable with scrollX enabled
         var table = $('#drawingDetailsTable').DataTable({
-            processing: true,
-            serverSide: true,
-            scrollX: true,
-            ajax: "{{ route('drawings.index') }}",
-            columns: [
-                { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
-                { data: 'drawing_details_no', name: 'drawing_details_no' },
-                { data: 'drawing_details_name', name: 'drawing_details_name' },
-                { data: 'isScopeDrawing', name: 'isScopeDrawing', render: function(data) {
-                    return data ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-secondary">No</span>';
-                }},
-                { data: 'submitted_at', name: 'submitted_at' },
-                { data: 'submitter.name', name: 'submitted_by' },
-                { data: 'comment_body', name: 'comment_body', render: function(data) {
-                    return data ? data.replace(/, /g, ',<br>') : 'N/A';
-                }},
-                { data: 'commented_at', name: 'commented_at', render: function(data) {
-                    return data ? data.replace(/, /g, ',<br>') : 'N/A';
-                }},
-                { data: 'commenter.name', name: 'commented_by', render: function(data) {
-                    return data ? data : 'N/A';
-                }},
-                { data: 'resubmitted_at', name: 'resubmitted_at', render: function(data) {
-                    return data ? data : 'N/A';
-                }},
-                { data: 'approved_at', name: 'approved_at', render: function(data) {
-                    return data ? data : 'N/A';
-                }},
-                { data: 'approver.name', name: 'approved_by', render: function(data) {
-                    return data ? data : 'N/A';
-                }},
-                { 
-                    data: 'drawing_file_path', 
-                    name: 'drawing_file_path',
-                    render: function(data) {
-                        if (data !== 'N/A') {
-                            return data;  // Data already contains HTML link generated in the controller
-                        }
-                        return 'N/A';
-                    }
-                },
-                { 
-                    data: 'report_file_path', 
-                    name: 'report_file_path',
-                    render: function(data) {
-                        if (data !== 'N/A') {
-                            return data;  // Data already contains HTML link generated in the controller
-                        }
-                        return 'N/A';
-                    }
-                },
-                { data: 'action', name: 'action', orderable: false, searchable: false }
-            ],
-            data: []  // Initialize with empty data
+            scrollX: true // Enable horizontal scrolling
         });
 
-        // Add New Drawing
-        $('#addNewDrawing').click(function() {
+        // Initialize global line chart data from the controller
+        var lineChartData = @json($lineChartData);
+
+        // Initialize the Line Chart with global data
+        const lineChart = new Chart(document.getElementById('lineChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: ['Scope Drawings', 'Submitted Drawings', 'Approved Drawings', 'Total Drawings'],
+                datasets: [{
+                    label: 'Global Drawing Stats',
+                    data: [
+                        lineChartData.totalScopeDrawings,
+                        lineChartData.totalSubmittedDrawings,
+                        lineChartData.totalApprovedDrawings,
+                        lineChartData.totalDrawings
+                    ],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    fill: false,
+                }]
+            }
+        });
+
+        // Initialize the Bar Chart for drawing-specific data
+        let barChart = new Chart(document.getElementById('barChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['Scope Drawings', 'Submitted Drawings', 'Approved Drawings'],
+                datasets: [{
+                    label: 'Drawing Stats By Drawing Type',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                    data: [0, 0, 0], // Empty data, will be updated on click
+                }]
+            }
+        });
+
+        // Handle card click event for fetching drawing details and updating bar chart
+        $('.clickable-card').on('click', function() {
+            const drawingId = $(this).data('id');
+
+            // Fetch relevant drawing details and chart data
+            fetchDrawingData(drawingId);
+        });
+
+        function fetchDrawingData(drawingId) {
+            $.ajax({
+                url: `/drawings/${drawingId}`, // Using resource route (show method)
+                type: 'GET',
+                success: function (response) {
+                    // Clear the existing table data
+                    table.clear().draw();
+
+                    // Populate the DataTable with the expanded rows
+                    $.each(response.details, function(index, detail) {
+                        // Create links for drawing files and report files if available
+                        let drawingFileLink = detail.drawing_file_url ? `<a href="${detail.drawing_file_url}" target="_blank">View Drawing</a>` : '';
+                        let reportFileLink = detail.report_file_url ? `<a href="${detail.report_file_url}" target="_blank">View Report</a>` : '';
+
+                        table.row.add([
+                            detail.id,  // Drawing ID (only for the first row)
+                            detail.drawing_details_no,  // Drawing Number
+                            detail.drawing_details_name,  // Drawing Name
+                            detail.isScopeDrawing,  // Scope Drawing (Yes/No)
+                            detail.submitted_at,  // Submitted At
+                            detail.submitted_by,  // Submitted By (name)
+                            detail.comment,  // Comment Body
+                            detail.commented_at,  // Commented At
+                            detail.commented_by,  // Commented By
+                            detail.resubmitted_at,  // Resubmitted At
+                            detail.approved_at,  // Approved At
+                            detail.approved_by,  // Approved By
+                            drawingFileLink,  // Drawing file download link
+                            reportFileLink,  // Report file download link
+                            `<button class="btn btn-danger" onclick="deleteDrawingDetail(${detail.id})">Delete</button>`
+                        ]).draw();
+                    });
+
+                    // Update Bar Chart with the fetched data
+                    barChart.data.datasets[0].data = [
+                        response.chartData.scopeDrawings,
+                        response.chartData.submittedDrawings,
+                        response.chartData.approvedDrawings
+                    ];
+                    barChart.update();
+                },
+                error: function (error) {
+                    console.log("Error fetching drawing data:", error);
+                }
+            });
+        }
+
+
+        // Open Add Drawing Modal
+        $('#addNewDrawing').on('click', function() {
+            $('#drawingForm')[0].reset();
             $('#drawingModalLabel').text('Add New Drawing');
-            $('#drawingForm').trigger('reset');
             $('#drawingModal').modal('show');
         });
 
-        // Form Submission for Create/Update
-        $('#drawingForm').submit(function(e) {
-            e.preventDefault();
-            var formData = new FormData(this);
-            var url = $('#drawingId').val() ? "{{ route('drawings.update', ':id') }}".replace(':id', $('#drawingId').val()) : "{{ route('drawings.store') }}";
+        // Save Drawing (Add/Update)
+        $('#drawingForm').on('submit', function(event) {
+            event.preventDefault();
+            let formData = new FormData(this);
+            let drawingId = $('#drawingId').val();
 
             $.ajax({
-                type: 'POST',
-                url: url,
+                url: drawingId ? `/drawings/${drawingId}` : `/drawings`,
+                method: drawingId ? 'PUT' : 'POST',
                 data: formData,
                 contentType: false,
                 processData: false,
                 success: function(response) {
                     $('#drawingModal').modal('hide');
+                    // Reload or refresh the DataTable
                     table.ajax.reload();
-                    Swal.fire('Success', response.message, 'success');
+                    alert('Drawing saved successfully!');
                 },
-                error: function(response) {
-                    Swal.fire('Error', 'Something went wrong!', 'error');
+                error: function(xhr) {
+                    console.error('Error saving drawing:', xhr);
                 }
-            });
-        });
-
-        // Edit Drawing
-        $('body').on('click', '.editDrawing', function() {
-            var drawingId = $(this).data('id');
-            $.get("{{ route('drawings.index') }}" + '/' + drawingId + '/edit', function(data) {
-                $('#drawingModalLabel').text('Edit Drawing');
-                $('#drawingModal').modal('show');
-                $('#drawingId').val(data.id);
-                $('#drawing_id').val(data.drawing_id);
-                $('#drawing_details_no').val(data.drawing_details_no);
-                $('#drawing_details_name').val(data.drawing_details_name);
-                $('#isScopeDrawing').bootstrapToggle(data.isScopeDrawing ? 'on' : 'off');
-                $('#submitted_at').val(data.submitted_at);
             });
         });
 
         // Delete Drawing
-        $('body').on('click', '.deleteDrawing', function() {
-            var drawingId = $(this).data('id');
+        let deleteDrawingId = null;
+        $(document).on('click', '.delete-drawing', function() {
+            deleteDrawingId = $(this).data('id');
             $('#deleteModal').modal('show');
-
-            $('#confirmDelete').click(function() {
-                $.ajax({
-                    type: 'DELETE',
-                    url: "{{ route('drawings.destroy', ':id') }}".replace(':id', drawingId),
-                    success: function(response) {
-                        $('#deleteModal').modal('hide');
-                        table.ajax.reload();
-                        Swal.fire('Deleted!', response.message, 'success');
-                    },
-                    error: function(response) {
-                        Swal.fire('Error', 'Something went wrong!', 'error');
-                    }
-                });
-            });
         });
 
-        // Initialize Bootstrap Toggle in Modals
-        $('#drawingModal').on('shown.bs.modal', function() {
-            $('#isScopeDrawing').bootstrapToggle();
-        });
-    });
-
-    $(function () {
-
-        var lineChartCanvas = $('#lineChart').get(0).getContext('2d');
-        var barChartCanvas = $('#barChart').get(0).getContext('2d');
-        var lineChart, barChart;
-        // var dataTable;
-
-        // // Initialize DataTable
-        // dataTable = $('#drawingDetailsTable').DataTable({
-        //     processing: true,
-        //     serverSide: false,
-        //     paging: true,
-        //     searching: true,
-        //     lengthChange: true,
-        //     autoWidth: false,
-        //     scrollX: true,
-        //     columns: [
-        //         { data: 'drawing_details_no', title: 'Number' },
-        //         { data: 'drawing_details_name', title: 'Name' },
-        //         { data: 'isScopeDrawing', title: 'Scope', render: function(data, type, row) {
-        //                 return data ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-secondary">No</span>';
-        //             }
-        //         },
-        //         { data: 'submitted_at', title: 'Submitted At', render: function(data) {
-        //                 return data ? data : 'N/A';
-        //             }
-        //         },
-        //         { data: 'submitted_by', title: 'Submitted By', render: function(data) {
-        //                 return data ? data : 'N/A';
-        //             }
-        //         },
-        //         { data: 'comment_body', title: 'Comment', render: function(data) {
-        //                 return data ? data.replace(/, /g, ',<br>') : 'N/A';
-        //             }
-        //         },
-        //         { data: 'commented_at', title: 'Commented At', render: function(data) {
-        //                 return data ? data.replace(/, /g, ',<br>') : 'N/A';
-        //             } 
-        //         },
-        //         { data: 'commented_by', title: 'Commented By', render: function(data) {  // Display the commenter's name
-        //                 return data ? data.replace(/, /g, ',<br>') : 'N/A';
-        //             } 
-        //         },
-        //         { data: 'resubmitted_at', title: 'Resubmitted At', render: function(data) {
-        //                 return data ? data.replace(/, /g, ',<br>') : 'N/A';
-        //             } 
-        //         },
-        //         { data: 'approved_at', title: 'Approved At', render: function(data) {
-        //                 return data ? data : 'N/A';
-        //             } 
-        //         },
-        //         { data: 'approved_by', title: 'Approved By', render: function(data) {    // Display the approver's name
-        //                 return data ? data : 'N/A';
-        //             } 
-        //         },
-        //         { 
-        //             data: 'drawing_file_path', 
-        //             name: 'drawing_file_path',
-        //             render: function(data) {
-        //                 if (data !== 'N/A') {
-        //                     return `<a href="${data}" download class="btn btn-sm btn-success">Download</a>`;
-        //                 }
-        //                 return 'N/A';
-        //             }
-        //         },
-        //         { 
-        //             data: 'report_file_path', 
-        //             name: 'report_file_path',
-        //             render: function(data) {
-        //                 if (data !== 'N/A') {
-        //                     return `<a href="${data}" download class="btn btn-sm btn-success">Download</a>`;
-        //                 }
-        //                 return 'N/A';
-        //             }
-        //         },
-        //         { data: null, title: 'Actions', render: function(data, type, row) {
-        //                 return `
-        //                     <button class="btn btn-warning btn-sm edit-btn" data-id="${row.id}">Edit</button>
-        //                     <button class="btn btn-danger btn-sm delete-btn" data-id="${row.id}">Delete</button>
-        //                 `;
-        //             }
-        //         }
-        //     ],
-        //     data: []  // Initialize with empty data
-        // });
-
-        // Handle card clicks
-        $('.clickable-card').on('click', function () {
-            var drawingId = $(this).data('id');
-            var drawingName = $(this).data('name');
-            var totalDrawings = $(this).data('total-drawings');
-            var totalScope = $(this).data('total-scope');
-            var totalSubmitted = $(this).data('total-submitted');
-            var totalApproved = $(this).data('total-approved');
-
-            // Fetch data for the charts and DataTable
+        // Confirm Delete
+        $('#confirmDelete').on('click', function() {
             $.ajax({
-                url: '/drawings/' + drawingId,
-                method: 'GET',
+                url: `/drawings/${deleteDrawingId}`,
+                method: 'DELETE',
                 success: function(response) {
-                    // Ensure response.details exists and contains the expected data structure
-                    if (response.details && response.details.length) {
-                        // Update the DataTable with new data
-                        dataTable.clear().rows.add(response.details).draw();
-
-                        // Prepare the line chart data
-                        var lineChartData = {
-                            labels  : ['Total Drawings', 'Scope', 'Submitted', 'Approved'],
-                            datasets: [
-                                {
-                                    label               : drawingName,
-                                    backgroundColor     : 'rgba(60,141,188,0.9)',
-                                    borderColor         : 'rgba(60,141,188,0.8)',
-                                    pointRadius         : false,
-                                    pointColor          : '#3b8bba',
-                                    pointStrokeColor    : 'rgba(60,141,188,1)',
-                                    pointHighlightFill  : '#fff',
-                                    pointHighlightStroke: 'rgba(60,141,188,1)',
-                                    fill                : false,
-                                    data                : [
-                                        totalDrawings, 
-                                        response.scopeCount, 
-                                        response.submittedCount, 
-                                        response.approvedCount
-                                    ]
-                                }
-                            ]
-                        };
-
-                        // Prepare the bar chart data
-                        var barChartData = {
-                            labels: ['Scope Drawings', 'Submitted Drawings', 'Approved Drawings'],
-                            datasets: [
-                                {
-                                    label               : 'Count',
-                                    backgroundColor     : ['rgba(60,141,188,0.9)', 'rgba(210, 214, 222, 1)', 'rgba(0, 166, 90, 0.9)'],
-                                    borderColor         : ['rgba(60,141,188,0.8)', 'rgba(210, 214, 222, 0.8)', 'rgba(0, 166, 90, 0.8)'],
-                                    data                : [response.scopeCount, response.submittedCount, response.approvedCount]
-                                }
-                            ]
-                        };
-
-                        // Update the charts with the new data
-                        updateLineChart(lineChartData);
-                        updateBarChart(barChartData);
-                    } else {
-                        // Handle case where there is no data
-                        dataTable.clear().draw();  // Clear the table if no details are returned
-                        updateLineChart({ datasets: [] });  // Clear the line chart
-                        updateBarChart({ datasets: [] });  // Clear the bar chart
-                    }
+                    $('#deleteModal').modal('hide');
+                    // Reload or refresh the DataTable
+                    table.ajax.reload();
+                    alert('Drawing deleted successfully!');
                 },
-                error: function(xhr, status, error) {
-                    console.log('Error:', error);  // Log any errors for debugging
+                error: function(xhr) {
+                    console.error('Error deleting drawing:', xhr);
                 }
             });
         });
-
-        function updateLineChart(data) {
-            if (lineChart) {
-                lineChart.destroy();
-            }
-
-            lineChart = new Chart(lineChartCanvas, {
-                type: 'line',
-                data: data,
-                options: {
-                    maintainAspectRatio: false,
-                    responsive: true,
-                    legend: {
-                        display: false
-                    },
-                    scales: {
-                        xAxes: [{
-                            gridLines: {
-                                display: true,
-                            }
-                        }],
-                        yAxes: [{
-                            ticks: {
-                                beginAtZero: true
-                            },
-                            gridLines: {
-                                display: true,
-                            }
-                        }]
-                    }
-                }
-            });
-        }
-
-        function updateBarChart(data) {
-            if (barChart) {
-                barChart.destroy();
-            }
-
-            barChart = new Chart(barChartCanvas, {
-                type: 'bar',
-                data: data,
-                options: {
-                    maintainAspectRatio: false,
-                    responsive: true,
-                    legend: {
-                        display: true
-                    },
-                    scales: {
-                        xAxes: [{
-                            gridLines: {
-                                display: true,
-                            }
-                        }],
-                        yAxes: [{
-                            ticks: {
-                                beginAtZero: true
-                            },
-                            gridLines: {
-                                display: true,
-                            }
-                        }]
-                    }
-                }
-            });
-        }
     });
 </script>
 @endpush
-
-
-
-
-

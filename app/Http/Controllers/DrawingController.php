@@ -9,6 +9,7 @@ use App\Models\ReportFile;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 use Yajra\DataTables\DataTables;
 
 class DrawingController extends Controller
@@ -16,56 +17,25 @@ class DrawingController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
-    {
-        if ($request->ajax()) {
-            $data = DrawingDetail::with([
-                'drawing', 
-                'submitter', 
-                'approver', 
-                'drawingFiles', 
-                'reportFiles', 
-                'comments.commenter:id,name' // Load comments and commenter relationships
-            ])->get();
-    
-            return DataTables::of($data)
-                ->addIndexColumn()
-                ->addColumn('comment_body', function($row) {
-                    return $row->comments->pluck('comment_body')->implode(', ') ?: 'N/A';
-                })
-                ->addColumn('commented_at', function($row) {
-                    return $row->comments->pluck('commented_at')->implode(', ') ?: 'N/A';
-                })
-                ->addColumn('commented_by', function($row) {
-                    return $row->comments->pluck('commenter.name')->implode(', ') ?: 'N/A';
-                })
-                ->addColumn('drawing_file_path', function($row) {
-                    if ($row->drawingFiles->isNotEmpty()) {
-                        return $row->drawingFiles->pluck('file_path')->map(function($file) {
-                            return '<a href="' . asset($file) . '" target="_blank">Download/View</a>';
-                        })->implode('<br>');
-                    }
-                    return 'N/A';
-                })
-                ->addColumn('report_file_path', function($row) {
-                    if ($row->reportFiles->isNotEmpty()) {
-                        return $row->reportFiles->pluck('file_path')->map(function($file) {
-                            return '<a href="' . asset($file) . '" target="_blank">Download/View</a>';
-                        })->implode('<br>');
-                    }
-                    return 'N/A';
-                })
-                ->addColumn('action', function($row) {
-                    $btn = '<a href="javascript:void(0)" data-id="'.$row->id.'" class="edit btn btn-warning btn-sm editDrawing"><i class="fas fa-edit"></i></a>';
-                    $btn .= ' <a href="javascript:void(0)" data-id="'.$row->id.'" class="delete btn btn-danger btn-sm deleteDrawing"><i class="fas fa-trash-alt"></i></a>';
-                    return $btn;
-                })
-                ->rawColumns(['comment_body', 'commented_at', 'drawing_file_path', 'report_file_path', 'action'])
-                ->make(true);
-        }
-    
+    public function index()
+    {    
         $drawings = Drawing::all();
-        return view('drawings', compact('drawings'));
+
+        // Prepare data for the line chart (global data without filtering by ID)
+        $totalDrawings = DrawingDetail::count();
+        $totalScopeDrawings = DrawingDetail::where('isScopeDrawing', 1)->count();
+        $totalSubmittedDrawings = DrawingDetail::whereNotNull('submitted_at')->count();
+        $totalApprovedDrawings = DrawingDetail::whereNotNull('approved_at')->count();
+
+        // Data for line chart
+        $lineChartData = [
+            'totalDrawings' => $totalDrawings,
+            'totalScopeDrawings' => $totalScopeDrawings,
+            'totalSubmittedDrawings' => $totalSubmittedDrawings,
+            'totalApprovedDrawings' => $totalApprovedDrawings,
+        ];
+
+        return view('drawings', compact('drawings', 'lineChartData'));
     }
 
     /**
@@ -128,22 +98,55 @@ class DrawingController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Drawing $drawing)
     {
-        //
-    }
+        // Fetch the drawing details along with submitter, approver, comments, drawing files, and report files
+        $drawingDetails = DrawingDetail::where('drawing_id', $drawing->id)
+            ->with(['submitter', 'approver', 'comments.commenter', 'drawingFiles', 'reportFiles'])
+            ->get();
     
+        // Expand each drawing detail to include rows for each comment, file, and report
+        $details = $drawingDetails->flatMap(function($detail) {
+            // Number of maximum rows needed to cover comments, files, and reports
+            $maxRows = max($detail->comments->count(), $detail->drawingFiles->count(), $detail->reportFiles->count());
     
+            $rows = [];
+            for ($i = 0; $i < $maxRows; $i++) {
+                $comment = $detail->comments[$i] ?? null;  // Check if comment exists
+                $drawingFile = $detail->drawingFiles[$i] ?? null;  // Check if drawing file exists
+                $reportFile = $detail->reportFiles[$i] ?? null;  // Check if report file exists
     
+                $rows[] = [
+                    'id' => $i === 0 ? $detail->id : '',  // Show only on the first row
+                    'drawing_details_no' => $i === 0 ? $detail->drawing_details_no : '',
+                    'drawing_details_name' => $i === 0 ? $detail->drawing_details_name : '',
+                    'isScopeDrawing' => $i === 0 ? ($detail->isScopeDrawing ? 'Yes' : 'No') : '',
+                    'submitted_at' => $i === 0 ? $detail->submitted_at : '',
+                    'submitted_by' => $i === 0 ? optional($detail->submitter)->name : '',
+                    // Safeguard for nullable comment fields
+                    'comment' => optional($comment)->comment_body ?? '',  
+                    'commented_at' => optional($comment)->commented_at ?? '',
+                    'commented_by' => optional(optional($comment)->commenter)->name ?? '',
+                    'resubmitted_at' => optional($comment)->resubmitted_at ?? '',
+                    'approved_at' => $i === 0 ? $detail->approved_at ?? '' : '',
+                    'approved_by' => $i === 0 ? optional($detail->approver)->name ?? '' : '',
+                    // Safeguard for nullable drawing and report files
+                    'drawing_file_url' => $drawingFile ? asset($drawingFile->file_path) : '',
+                    'report_file_url' => $reportFile ? asset($reportFile->file_path) : ''
+                ];
+            }
     
+            return $rows;  // Return the expanded rows
+        });
     
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
+        return response()->json([
+            'details' => $details,
+            'chartData' => [
+                'scopeDrawings' => $drawingDetails->where('isScopeDrawing', 1)->count(),
+                'submittedDrawings' => $drawingDetails->whereNotNull('submitted_at')->count(),
+                'approvedDrawings' => $drawingDetails->whereNotNull('approved_at')->count(),
+            ]
+        ]);
     }
 
     /**
@@ -209,6 +212,22 @@ class DrawingController extends Controller
     public function destroy(string $id)
     {
         $drawingDetail = DrawingDetail::findOrFail($id);
+
+        // Delete related drawing and report files from storage
+        foreach ($drawingDetail->drawingFiles as $file) {
+            if (File::exists(public_path($file->file_path))) {
+                File::delete(public_path($file->file_path));  // Remove file from server
+            }
+            $file->delete();  // Remove file record from database
+        }
+
+        foreach ($drawingDetail->reportFiles as $file) {
+            if (File::exists(public_path($file->file_path))) {
+                File::delete(public_path($file->file_path));
+            }
+            $file->delete();
+        }
+
         $drawingDetail->delete();
         return response()->json(['success' => true, 'message' => 'Drawing deleted successfully']);
     }
