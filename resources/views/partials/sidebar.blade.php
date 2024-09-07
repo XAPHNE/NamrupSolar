@@ -35,7 +35,7 @@
                 <!-- Add your sidebar menu items here -->
                 @if (auth()->user()->isAdmin || auth()->user()->isVendor)
                     <li class="nav-item">
-                        <a href="{{ url('dashboard') }}" class="nav-link {{ Request::is('dashboard*') ? 'active' : '' }}" class="nav-link">
+                        <a href="{{ url('home') }}" class="nav-link {{ Request::is('home*') ? 'active' : '' }}" class="nav-link">
                             <i class="nav-icon fas fa-home"></i>
                             <p>
                                 Home
