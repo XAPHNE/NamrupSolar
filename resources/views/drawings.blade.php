@@ -73,15 +73,15 @@
                                 <th>Name</th>
                                 <th>Scope</th>
                                 <th>Submitted At</th>
-                                <th>Submitted By</th>
-                                <th>Comment</th>
-                                <th>Commented At</th>
-                                <th>Commented By</th>
-                                <th>Resubmitted At</th>
+                                {{-- <th>Submitted By</th> --}}
+                                {{-- <th>Latest Comment</th> --}}
+                                {{-- <th>Commented At</th> --}}
+                                {{-- <th>Commented By</th> --}}
+                                {{-- <th>Resubmitted At</th> --}}
                                 <th>Approved At</th>
-                                <th>Approved By</th>
+                                {{-- <th>Approved By</th> --}}
                                 <th>Drawing File</th>
-                                <th>Reports</th>
+                                {{-- <th>Supporting Documents</th> --}}
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -138,7 +138,7 @@
                             <input type="file" class="form-control-file" id="drawing_file" name="drawing_file">
                         </div>
                         <div class="form-group">
-                            <label for="report_file">Upload Report</label>
+                            <label for="report_file">Upload Supporting Documents (Optional)</label>
                             <input type="file" class="form-control-file" id="report_file" name="report_file">
                         </div>
                     </div>
@@ -185,7 +185,22 @@
     $(document).ready(function () {
         // Initialize DataTable with scrollX enabled
         var table = $('#drawingDetailsTable').DataTable({
-            scrollX: true // Enable horizontal scrolling
+            scrollX: true,  // Enable horizontal scrolling
+            columnDefs: [
+                { targets: 0, visible: false }  // Hide the first column (ID)
+            ]
+        });
+
+        // Add click event listener to rows
+        $('#drawingDetailsTable tbody').on('click', 'tr', function () {
+            // Get the data for the clicked row
+            var data = table.row(this).data();
+
+            // Assuming the ID is in the first column (index 0)
+            var drawingId = data[0]; // Or whichever column contains the drawing ID
+
+            // Redirect to the edit page
+            window.location.href = `/drawings/${drawingId}/edit`;
         });
 
         // Initialize global line chart data from the controller
@@ -235,38 +250,42 @@
 
         function fetchDrawingData(drawingId) {
             $.ajax({
-                url: `/drawings/${drawingId}`, // Using resource route (show method)
+                url: `/drawings/${drawingId}`, // Using the resource route (show method)
                 type: 'GET',
                 success: function (response) {
                     // Clear the existing table data
                     table.clear().draw();
 
-                    // Populate the DataTable with the expanded rows
-                    $.each(response.details, function(index, detail) {
-                        // Create links for drawing files and report files if available
+                    // Populate the DataTable using the map method with latest data
+                    let mappedData = response.details.map(detail => {
                         let drawingFileLink = detail.drawing_file_url ? `<a href="${detail.drawing_file_url}" target="_blank">View Drawing</a>` : '';
                         let reportFileLink = detail.report_file_url ? `<a href="${detail.report_file_url}" target="_blank">View Report</a>` : '';
 
-                        table.row.add([
-                            detail.id,  // Drawing ID (only for the first row)
-                            detail.drawing_details_no,  // Drawing Number
-                            detail.drawing_details_name,  // Drawing Name
-                            detail.isScopeDrawing,  // Scope Drawing (Yes/No)
-                            detail.submitted_at,  // Submitted At
-                            detail.submitted_by,  // Submitted By (name)
-                            detail.comment,  // Comment Body
-                            detail.commented_at,  // Commented At
-                            detail.commented_by,  // Commented By
-                            detail.resubmitted_at,  // Resubmitted At
-                            detail.approved_at,  // Approved At
-                            detail.approved_by,  // Approved By
-                            drawingFileLink,  // Drawing file download link
-                            reportFileLink,  // Report file download link
+                        return [
+                            detail.id,
+                            detail.drawing_details_no,
+                            detail.drawing_details_name,
+                            detail.isScopeDrawing,
+                            detail.submitted_at,
+                            // detail.submitted_by,
+                            // detail.comment_body,  // Latest comment body
+                            // detail.commented_at,  // Latest commented_at
+                            // detail.commented_by,  // Latest commenter
+                            // detail.resubmitted_at,  // Latest resubmitted_at
+                            detail.approved_at,
+                            // detail.approved_by,
+                            `<a href="${detail.drawing_file_url}" target="_blank">View Drawing</a>`,
+                            // `<a href="${detail.report_file_url}">View Supporting Document</a>`,
+                            // drawingFileLink,  // Latest drawing file link
+                            // reportFileLink,  // Latest report file link
                             `<button class="btn btn-danger delete-drawing" data-id="${detail.id}">Delete</button>`
-                        ]).draw();
+                        ];
                     });
 
-                    // Update Bar Chart with the fetched data
+                    // Add rows to the table
+                    table.rows.add(mappedData).draw();
+
+                    // Update Bar Chart with all data for the drawing
                     barChart.data.datasets[0].data = [
                         response.chartData.scopeDrawings,
                         response.chartData.submittedDrawings,
@@ -279,7 +298,6 @@
                 }
             });
         }
-
 
         // Open Add Drawing Modal
         $('#addNewDrawing').on('click', function() {
@@ -302,8 +320,7 @@
                 processData: false,
                 success: function(response) {
                     $('#drawingModal').modal('hide');
-                    // Reload or refresh the DataTable
-                    table.ajax.reload();
+                    fetchDrawingData(drawingId ? drawingId : response.id);  // Reload data via fetchDrawingData
                     alert('Drawing saved successfully!');
                 },
                 error: function(xhr) {
@@ -326,8 +343,7 @@
                 method: 'DELETE',
                 success: function(response) {
                     $('#deleteModal').modal('hide');
-                    // Reload or refresh the DataTable
-                    table.ajax.reload();
+                    fetchDrawingData(deleteDrawingId);  // Reload data after deletion
                     alert('Drawing deleted successfully!');
                 },
                 error: function(xhr) {
