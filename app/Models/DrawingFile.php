@@ -10,10 +10,15 @@ class DrawingFile extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['drawing_detail_id', 'file_path'];
+    protected $fillable = ['drawing_file_id', 'file_path'];
 
     public function drawingDetail()
     {
         return $this->belongsTo(DrawingDetail::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class, 'drawing_file_id');
     }
 }
