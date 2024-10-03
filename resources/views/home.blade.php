@@ -85,168 +85,87 @@
             </div>
         </div>
     </div>
-    <div class="row justify-content-between">
-        <div class="col-sm-2">
-            <div class="card card-info">
-                <div class="card-hearder text-center pt-3">
-                    <h5><strong>Contract Value</strong></h5>
-                </div>
-                <div class="card-body text-center">
-                    {{-- <img src="{{ asset('dist/img/home/money.jpg') }}" width="130px"> --}}
-                    <i class="fas fa-rupee-sign fa-3x" style="color: #74C0FC"></i>
-                </div>
-                <div class="card-footer">
-                    <p style="font-size: 12px">Scope: <strong>₹ 1,119</strong> Cr</p>
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:70%">
-                            <span class="text-center">70%</span>
+    <div class="row pb-3">
+        <div class="col-sm-12">
+            {{-- Physical completion card --}}
+            <div class="card">
+                <div class="card-body p-1">
+                    <div class="progress" style="height:30px">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar"
+                            aria-valuenow="{{ round($totalProgress, 2) }}" 
+                            aria-valuemin="0" 
+                            aria-valuemax="100" 
+                            style="width: {{ round($totalProgress, 2) }}%;">
+                            <span class="text-center">Physical Completion: {{ round($totalProgress, 2) }}%</span>
                         </div>
                     </div>
-                    <p style="font-size: 12px">Completed: <strong>₹ 214</strong> Cr</p>
                 </div>
             </div>
-        </div>
-        <div class="col-sm-2">
-            <div class="card card-info">
-                <div class="card-hearder text-center pt-3">
-                    <h5><strong>Excavation</strong></h5>
-                </div>
-                <div class="card-body text-center">
-                    {{-- <img src="{{ asset('dist/img/home/money.jpg') }}" width="130px"> --}}
-                    <i class="fas fa-truck-pickup fa-3x" style="color: #74C0FC"></i>
-                </div>
-                <div class="card-footer">
-                    <p style="font-size: 12px">Scope: <strong>15.42</strong> L cum</p>
+            {{-- Time completion Card --}}
+            <!-- <div class="card">
+                <div class="card-body">
                     <div class="progress">
                         <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:70%">
-                            <span class="text-center">70%</span>
+                            <span class="text-center">Time Completion: 70%</span>
                         </div>
                     </div>
-                    <p style="font-size: 12px">Completed: <strong>12.93</strong> L cum</p>
                 </div>
-            </div>
-        </div>
-        <div class="col-sm-2">
-            <div class="card card-info">
-                <div class="card-hearder text-center pt-3">
-                    <h5><strong>Tunnel Excavation</strong></h5>
-                </div>
-                <div class="card-body text-center">
-                    {{-- <img src="{{ asset('dist/img/home/money.jpg') }}" width="130px"> --}}
-                    <i class="fas fa-archway fa-3x" style="color: #74C0FC"></i>
-                </div>
-                <div class="card-footer">
-                    <p style="font-size: 12px">Scope: <strong>4.90</strong> Km</p>
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:70%">
-                            <span class="text-center">70%</span>
-                        </div>
-                    </div>
-                    <p style="font-size: 12px">Completed: <strong>3.81</strong> Km</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-2">
-            <div class="card card-info">
-                <div class="card-hearder text-center pt-3">
-                    <h5><strong>Strctural Steel</strong></h5>
-                </div>
-                <div class="card-body text-center">
-                    {{-- <img src="{{ asset('dist/img/home/money.jpg') }}" width="130px"> --}}
-                    <i class="fas fa-rupee-sign fa-3x" style="color: #74C0FC"></i>
-                </div>
-                <div class="card-footer">
-                    <p style="font-size: 12px">Scope: <strong>1049</strong> MT</p>
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:70%">
-                            <span class="text-center">70%</span>
-                        </div>
-                    </div>
-                    <p style="font-size: 12px">Completed: <strong>566</strong> MT</p>
-                </div>
-            </div>
+            </div> -->
         </div>
     </div>
-    <div class="row justify-content-between">
-        <div class="col-sm-2">
-            <div class="card card-info">
-                <div class="card-hearder text-center pt-3">
-                    <h5><strong>Contract Value</strong></h5>
-                </div>
-                <div class="card-body text-center">
-                    {{-- <img src="{{ asset('dist/img/home/money.jpg') }}" width="130px"> --}}
-                    <i class="fas fa-rupee-sign fa-3x" style="color: #74C0FC"></i>
-                </div>
-                <div class="card-footer">
-                    <p style="font-size: 12px">Scope: <strong>₹ 1,119</strong> Cr</p>
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:70%">
-                            <span class="text-center">70%</span>
+    @foreach($majorActivities->chunk(5) as $chunk)  <!-- Group the cards in chunks of 5 -->
+        <div class="row justify-content-between">
+            @foreach($chunk as $majorActivity)
+                <div class="col-sm-2">
+                    <!-- Wrap the card in an anchor tag to make it clickable -->
+                    <a href="{{ route('home.edit', $majorActivity->id) }}" style="text-decoration: none; color: inherit;">
+                        <div class="card card-info" style="min-height: 197px">
+                            <div class="card-header text-center m-0 p-0" style="min-height: 50px">
+                                <h7 class="m-0 p-0"><strong>{{ $majorActivity->name }}</strong></h7>
+                            </div>
+                            <div class="card-body text-center pt-1 pb-1">
+                                <img src="{{ asset($majorActivity->image_path) }}" width="130px">
+                            </div>
+                            <div class="card-footer pt-0 pb-0">
+                                <p class="m-0" style="font-size: 12px">Scope: <strong>{{ $majorActivity->scope }}</strong> {{ $majorActivity->unit }}</p>
+                                <div class="progress">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" aria-valuenow="{{ ($majorActivity->completed / $majorActivity->scope) * 100 }}" aria-valuemin="0" aria-valuemax="100" style="width:{{ ($majorActivity->completed / $majorActivity->scope) * 100 }}%">
+                                        <span class="text-center p-0">{{ round(($majorActivity->completed / $majorActivity->scope) * 100, 2) }}%</span>
+                                    </div>
+                                </div>
+                                <p class="m-0 p-0" style="font-size: 12px">Completed: <strong>{{ $majorActivity->completed }}</strong> {{ $majorActivity->unit }}</p>
+                            </div>
                         </div>
-                    </div>
-                    <p style="font-size: 12px">Completed: <strong>₹ 214</strong> Cr</p>
+                    </a>
                 </div>
-            </div>
+            @endforeach
         </div>
-        <div class="col-sm-2">
-            <div class="card card-info">
-                <div class="card-hearder text-center pt-3">
-                    <h5><strong>Contract Value</strong></h5>
-                </div>
-                <div class="card-body text-center">
-                    {{-- <img src="{{ asset('dist/img/home/money.jpg') }}" width="130px"> --}}
-                    <i class="fas fa-rupee-sign fa-3x" style="color: #74C0FC"></i>
-                </div>
-                <div class="card-footer">
-                    <p style="font-size: 12px">Scope: <strong>₹ 1,119</strong> Cr</p>
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:70%">
-                            <span class="text-center">70%</span>
-                        </div>
-                    </div>
-                    <p style="font-size: 12px">Completed: <strong>₹ 214</strong> Cr</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-2">
-            <div class="card card-info">
-                <div class="card-hearder text-center pt-3">
-                    <h5><strong>Contract Value</strong></h5>
-                </div>
-                <div class="card-body text-center">
-                    {{-- <img src="{{ asset('dist/img/home/money.jpg') }}" width="130px"> --}}
-                    <i class="fas fa-rupee-sign fa-3x" style="color: #74C0FC"></i>
-                </div>
-                <div class="card-footer">
-                    <p style="font-size: 12px">Scope: <strong>₹ 1,119</strong> Cr</p>
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:70%">
-                            <span class="text-center">70%</span>
-                        </div>
-                    </div>
-                    <p style="font-size: 12px">Completed: <strong>₹ 214</strong> Cr</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-2">
-            <div class="card card-info">
-                <div class="card-hearder text-center pt-3">
-                    <h5><strong>Contract Value</strong></h5>
-                </div>
-                <div class="card-body text-center">
-                    {{-- <img src="{{ asset('dist/img/home/money.jpg') }}" width="130px"> --}}
-                    <i class="fas fa-rupee-sign fa-3x" style="color: #74C0FC"></i>
-                </div>
-                <div class="card-footer">
-                    <p style="font-size: 12px">Scope: <strong>₹ 1,119</strong> Cr</p>
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:70%">
-                            <span class="text-center">70%</span>
-                        </div>
-                    </div>
-                    <p style="font-size: 12px">Completed: <strong>₹ 214</strong> Cr</p>
-                </div>
-            </div>
-        </div>
-    </div>
+    @endforeach
 @endsection
+
+@push('scripts')
+    <!-- Pass Blade variable to JavaScript to show countdown-timer -->
+    <script>
+        const targetDate = new Date("{{ $targetDate }}").getTime();
+    </script>
+    <script src="{{ asset('dist/js/custom/countdown-timer.js') }}"></script>
+    <script>
+        // Check if there's a success message in the session
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: '{{ session('success') }}',
+            });
+        @endif
+    
+        // Check if there's an error message in the session
+        @if(session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: '{{ session('error') }}',
+            });
+        @endif
+    </script>
+@endpush
