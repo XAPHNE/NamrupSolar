@@ -18,7 +18,7 @@
         </div>
 
         <!-- SidebarSearch Form -->
-        <div class="form-inline">
+        {{-- <div class="form-inline">
             <div class="input-group" data-widget="sidebar-search">
                 <input class="form-control form-control-sidebar" type="search" placeholder="Search" aria-label="Search">
                 <div class="input-group-append">
@@ -27,7 +27,7 @@
                     </button>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         <!-- Sidebar Menu -->
         <nav class="mt-2">
@@ -62,14 +62,22 @@
                         </p>
                     </a>
                 </li>
-                {{-- <li class="nav-item">
-                    <a href="#" class="nav-link">
+                <li class="nav-item">
+                    <a href="{{ url('invoices') }}" class="nav-link {{ Request::is('invoices*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-file-invoice"></i>
                         <p>
-                            Reports
+                            Invoice
                         </p>
                     </a>
-                </li> --}}
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url('project-timeline') }}" class="nav-link {{ Request::is('project-timeline*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-file-invoice"></i>
+                        <p>
+                            Project Timeline
+                        </p>
+                    </a>
+                </li>
             </ul>
         </nav>
     </div>
