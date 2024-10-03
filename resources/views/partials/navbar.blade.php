@@ -12,10 +12,21 @@
         </li> --}}
     </ul>
 
+    <!-- Reverse Countdown Timer -->
+    {{-- <ul class="navbar-nav mx-auto">
+        <li class="nav-item">
+            <div id="countdown-timer" class="nav-link font-weight-bold"></div>
+        </li>
+    </ul> --}}
+
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
-        <!-- Navbar Search -->
+        <!-- Reverse Countdown Timer -->
         <li class="nav-item">
+            <div id="countdown-timer" class="nav-link font-weight-bold"></div>
+        </li>
+        <!-- Navbar Search -->
+        {{-- <li class="nav-item">
             <a class="nav-link" data-widget="navbar-search" href="#" role="button">
                 <i class="fas fa-search"></i>
             </a>
@@ -34,7 +45,7 @@
                     </div>
                 </form>
             </div>
-        </li>
+        </li> --}}
 
         <!-- Messages Dropdown Menu -->
         <!-- Add your messages dropdown code here -->
