@@ -14,7 +14,7 @@ class HomeController extends Controller
     public function index()
     {
         // Set your target datetime
-        $targetDate = '2025-12-31 23:59:59'; // Target datetime variable
+        $targetDate = '2025-03-31 23:59:59'; // Target datetime variable
 
         // Fetch all MajorActivity records
         $majorActivities = MajorActivity::all();
