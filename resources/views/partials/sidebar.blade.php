@@ -56,7 +56,7 @@
                 @endif
                 <li class="nav-item">
                     <a href="{{ url('drawings') }}" class="nav-link {{ Request::is('drawings*') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-receipt"></i>
+                        <i class="nav-icon fas fa-palette"></i>
                         <p>
                             Drawings
                         </p>
@@ -71,8 +71,16 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="{{ url('supplies') }}" class="nav-link {{ Request::is('supplies*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-truck-moving"></i>
+                        <p>
+                            Supply
+                        </p>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="{{ url('project-timeline') }}" class="nav-link {{ Request::is('project-timeline*') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-file-invoice"></i>
+                        <i class="nav-icon fas fa-chart-line"></i>
                         <p>
                             Project Timeline
                         </p>
