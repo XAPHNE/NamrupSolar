@@ -125,6 +125,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
 <!-- Sweet Alert JS -->
 <script src="{{ asset('plugins/sweetalert2/sweetalert2.all.min.js') }}"></script>
+<script>
+    const targetDate = new Date("{{ '2025-03-31 23:59:59' }}").getTime();
+</script>
+<script src="{{ asset('dist/js/custom/countdown-timer.js') }}"></script>
 
 @stack('scripts')
 </body>
