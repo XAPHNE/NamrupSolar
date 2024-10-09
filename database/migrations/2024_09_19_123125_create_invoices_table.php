@@ -19,8 +19,11 @@ return new class extends Migration
             $table->dateTime('raised_at');
             $table->string('file_path');
             $table->dateTime('paid_at')->nullable();
+            $table->unsignedBigInteger('action_taken_by')->nullable();
             $table->timestamps();
             $table->softDeletes();
+
+            $table->foreign('action_taken_by')->references('id')->on('users')->onDelete('set null');
         });
     }
 
