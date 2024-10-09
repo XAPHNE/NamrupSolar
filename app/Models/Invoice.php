@@ -17,5 +17,11 @@ class Invoice extends Model
         'raised_at',
         'file_path',
         'paid_at',
+        'action_taken_by',
     ];
+
+    public function actionTaker()
+    {
+        return $this->belongsTo(User::class, 'action_taken_by');
+    }
 }
