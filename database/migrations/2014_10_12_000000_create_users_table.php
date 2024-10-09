@@ -19,6 +19,8 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->boolean('isAdmin');
+            $table->boolean('isEditor');
+            $table->boolean('isViewer');
             $table->rememberToken();
             $table->timestamps();
         });
@@ -27,6 +29,8 @@ return new class extends Migration
             'email' => 'admin@apgcl.org',
             'password' => bcrypt('admin@123'),
             'isAdmin' => true,
+            'isEditor' => false,
+            'isViewer' => false,
         ]);
     }
 
