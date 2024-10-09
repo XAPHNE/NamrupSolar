@@ -46,7 +46,7 @@
                 @endif
                 @if (auth()->user()->isAdmin)
                     <li class="nav-item">
-                        <a href="#" class="nav-link {{ Request::is('user-management*') ? 'active' : '' }}">
+                        <a href="{{ url('users') }}" class="nav-link {{ Request::is('users*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-users"></i>
                             <p>
                                 Users
