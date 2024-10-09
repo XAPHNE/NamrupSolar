@@ -145,10 +145,10 @@
 
 @push('scripts')
     <!-- Pass Blade variable to JavaScript to show countdown-timer -->
-    <script>
+    {{-- <script>
         const targetDate = new Date("{{ $targetDate }}").getTime();
-    </script>
-    <script src="{{ asset('dist/js/custom/countdown-timer.js') }}"></script>
+    </script> --}}
+    {{-- <script src="{{ asset('dist/js/custom/countdown-timer.js') }}"></script> --}}
     <script>
         // Check if there's a success message in the session
         @if(session('success'))
