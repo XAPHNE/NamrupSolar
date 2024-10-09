@@ -14,7 +14,7 @@ class HomeController extends Controller
     public function index()
     {
         // Set your target datetime
-        $targetDate = '2025-03-31 23:59:59'; // Target datetime variable
+        // $targetDate = '2025-03-31 23:59:59'; // Target datetime variable
 
         // Fetch all MajorActivity records
         $majorActivities = MajorActivity::all();
@@ -35,7 +35,7 @@ class HomeController extends Controller
         }
 
         // Pass all necessary variables to the view
-        return view('home', compact('targetDate', 'majorActivities', 'totalProgress'));
+        return view('home', compact('majorActivities', 'totalProgress'));
     }
 
     /**
