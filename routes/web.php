@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('report-files', ReportFileController::class);
     Route::resource('invoices', InvoiceController::class);
     Route::resource('supplies', SupplyController::class);
+    Route::get('project-timeline', function () { return view('project-timeline'); });
 });
 
 require __DIR__.'/auth.php';
