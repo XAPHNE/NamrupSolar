@@ -4,6 +4,9 @@
         <li class="nav-item">
             <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
         </li>
+        <li class="nav-item d-none d-sm-inline-block">
+            <a href="{{ url('/') }}" class="nav-link">Salient Features</a>
+        </li>
         {{-- <li class="nav-item d-none d-sm-inline-block">
             <a href="{{ url('/') }}" class="nav-link">Home</a>
         </li>
@@ -23,7 +26,7 @@
     <ul class="navbar-nav ml-auto">
         <!-- Reverse Countdown Timer -->
         <li class="nav-item">
-            <div id="countdown-timer" class="nav-link font-weight-bold"></div>
+            <div id="countdown-timer" class="nav-link font-weight-bold text-danger"></div>
         </li>
         <!-- Navbar Search -->
         {{-- <li class="nav-item">
