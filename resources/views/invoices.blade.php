@@ -22,22 +22,28 @@
             <div class="card-header">
                 <h3 class="d-inline">Invoices</h3>
                 <div class="card-tools">
-                    <button id="addInvoiceButton" class="btn btn-default"><i class="fas fa-plus"></i></button>
+                    @if (auth()->user()->is_admin || auth()->user()->is_creator)
+                        <button id="addInvoiceButton" class="btn btn-default"><i class="fas fa-plus"></i></button>
+                    @endif
                 </div>
             </div>
             <div class="card-body">
-                <table id="invoicesTable" class="display nowrap table table-bordered table-hover" style="width: 100%">
+                <table id="invoicesTable" class="table display nowrap table-bordered table-hover" style="width: 100%">
                     <thead>
-                        <tr>
+                        <tr class="table-primary">
                             <th class="text-center">#</th>
                             <th class="text-center">Bill No</th>
                             <th class="text-center">Description</th>
                             <th class="text-center">Amount</th>
                             <th class="text-center">Raised at</th>
-                            <th class="text-center">File</th>
+                            <th class="text-center nosort">File</th>
                             <th class="text-center">Paid at</th>
-                            <th class="text-center">Action Taken By</th>
-                            <th class="text-center">Actions</th>
+                            @if (auth()->user()->is_admin)
+                                <th class="text-center nosort">Action Taken By</th>
+                            @endif
+                            @if (auth()->user()->is_admin || auth()->user()->is_editor)
+                                <th class="text-center nosort">Actions</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
@@ -50,20 +56,26 @@
                                 <td class="text-center">{{ Carbon::parse($invoice->raised_at)->format('d-m-Y, h:i A') }}</td>
                                 <td class="text-center"><a href="{{ $invoice->file_path }}" target="_blank"><i title="View/Download" class="fas fa-eye"></i></a></td>
                                 <td class="text-center">{{ $invoice->paid_at ? Carbon::parse($invoice->paid_at)->format('d-m-Y, h:i A') : 'N/A' }}</td>
-                                <td class="text-center">{{ $invoice->actionTaker->name ?? 'N/A' }}</td>
-                                <td class="text-center">
-                                    <button class="btn btn-warning edit-button" 
-                                        data-id="{{ $invoice->id }}" 
-                                        data-bill_no="{{ $invoice->bill_no }}" 
-                                        data-description="{{ $invoice->description }}" 
-                                        data-amount="{{ $invoice->amount }}" 
-                                        data-raised_at="{{ $invoice->raised_at }}"
-                                        data-paid_at="{{ $invoice->paid_at }}"><i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-danger delete-button" 
-                                        data-id="{{ $invoice->id }}"><i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </td>
+                                @if (auth()->user()->is_admin)
+                                    <td class="text-center">{{ $invoice->actionTaker->name ?? 'N/A' }}</td>
+                                @endif
+                                @if (auth()->user()->is_admin || auth()->user()->is_editor)
+                                    <td class="text-center">
+                                        <button class="btn btn-warning edit-button"
+                                            data-id="{{ $invoice->id }}"
+                                            data-bill_no="{{ $invoice->bill_no }}"
+                                            data-description="{{ $invoice->description }}"
+                                            data-amount="{{ $invoice->amount }}"
+                                            data-raised_at="{{ $invoice->raised_at }}"
+                                            data-paid_at="{{ $invoice->paid_at }}"><i class="fas fa-edit"></i>
+                                        </button>
+                                        @if (auth()->user()->is_admin)
+                                            <button class="btn btn-danger delete-button"
+                                                data-id="{{ $invoice->id }}"><i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        @endif
+                                    </td>
+                                @endif
                             </tr>
                         @endforeach
                     </tbody>
@@ -156,9 +168,15 @@
 
 @push('scripts')
 <script>
-new DataTable('#invoicesTable');
-
 $(document).ready(function () {
+    new DataTable('#invoicesTable', {
+        columnDefs: [
+            {
+                targets: 'nosort',
+                orderable: false,
+            }
+        ],
+    });
     // Handle Add Button
     $('#addInvoiceButton').on('click', function () {
         $('#modalTitle').text('Add New Invoice');
