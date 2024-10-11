@@ -18,19 +18,26 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->boolean('isAdmin');
-            $table->boolean('isEditor');
-            $table->boolean('isViewer');
+            $table->boolean('must_change_password');
+            $table->boolean('is_admin');
+            $table->boolean('is_creator');
+            $table->boolean('is_editor');
+            $table->boolean('is_approver');
+            $table->boolean('is_viewer');
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes();
         });
         DB::table('users')->insert([
             'name' => 'Admin',
             'email' => 'admin@apgcl.org',
             'password' => bcrypt('admin@123'),
-            'isAdmin' => true,
-            'isEditor' => false,
-            'isViewer' => false,
+            'must_change_password' => false,
+            'is_admin' => true,
+            'is_creator' => false,
+            'is_editor' => false,
+            'is_approver' => false,
+            'is_viewer' => false,
         ]);
     }
 
