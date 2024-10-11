@@ -8,12 +8,12 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <!-- Sidebar user panel (optional) -->
-        <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+        <div class="pb-3 mt-3 mb-3 user-panel d-flex">
             <div class="image">
-                <i class="fas fa-user-circle fa-2x text-white"></i>
+                <i class="text-white fas fa-user-circle fa-2x"></i>
             </div>
             <div class="info">
-                <a href="#" class="d-block">{{ Auth::user()->name }}</a>
+                <a href="{{ url('profile') }}" class="d-block">{{ Auth::user()->name }}</a>
             </div>
         </div>
 
@@ -33,18 +33,16 @@
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                 <!-- Add your sidebar menu items here -->
-                @if (auth()->user()->isAdmin || auth()->user()->isVendor)
-                    <li class="nav-item">
-                        <a href="{{ url('home') }}" class="nav-link {{ Request::is('home*') ? 'active' : '' }}" class="nav-link">
-                            <i class="nav-icon fas fa-home"></i>
-                            <p>
-                                Home
-                                {{-- <i class="right fas fa-angle-left"></i> --}}
-                            </p>
-                        </a>
-                    </li>
-                @endif
-                @if (auth()->user()->isAdmin)
+                <li class="nav-item">
+                    <a href="{{ url('home') }}" class="nav-link {{ Request::is('home*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-home"></i>
+                        <p>
+                            Home
+                            {{-- <i class="right fas fa-angle-left"></i> --}}
+                        </p>
+                    </a>
+                </li>
+                @if (auth()->user()->is_admin)
                     <li class="nav-item">
                         <a href="{{ url('users') }}" class="nav-link {{ Request::is('users*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-users"></i>
