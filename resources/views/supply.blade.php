@@ -22,20 +22,26 @@
             <div class="card-header">
                 <h3 class="d-inline">Supplies</h3>
                 <div class="card-tools">
-                    <button id="addSupplyButton" class="btn btn-default"><i class="fas fa-plus"></i></button>
+                    @if (auth()->user()->is_admin || auth()->user()->is_creator)
+                        <button id="addSupplyButton" class="btn btn-default"><i class="fas fa-plus"></i></button>
+                    @endif
                 </div>
             </div>
             <div class="card-body">
-                <table id="suppliesTable" class="display nowrap table table-bordered table-hover" style="width: 100%">
+                <table id="suppliesTable" class="table display nowrap table-bordered table-hover" style="width: 100%">
                     <thead>
-                        <tr>
+                        <tr class="table-primary">
                             <th class="text-center">#</th>
                             <th class="text-center">Particulars</th>
                             <th class="text-center">Status</th>
                             <th class="text-center">Ordered on</th>
                             <th class="text-center">Delivered on</th>
-                            <th class="text-center">Action Taken By</th>
-                            <th class="text-center">Actions</th>
+                            @if (auth()->user()->is_admin)
+                                <th class="text-center nosort">Action Taken By</th>
+                            @endif
+                            @if (auth()->user()->is_admin || auth()->user()->is_editor)
+                                <th class="text-center nosort">Actions</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
@@ -46,19 +52,25 @@
                                 <td class="text-center">{{ $supply->status }}</td>
                                 <td class="text-center">{{ Carbon::parse($supply->ordered_on)->format('d-m-Y, h:i A') }}</td>
                                 <td class="text-center">{{ $supply->delivered_on ? Carbon::parse($supply->delivered_on)->format('d-m-Y, h:i A') : 'N/A' }}</td>
-                                <td class="text-center">{{ $supply->actionTaker->name ?? 'N/A' }}</td>
-                                <td class="text-center">
-                                    <button class="btn btn-warning" 
-                                        data-id="{{ $supply->id }}" 
-                                        data-particulars="{{ $supply->particulars }}" 
-                                        data-status="{{ $supply->status }}" 
-                                        data-ordered_on="{{ $supply->ordered_on }}" 
-                                        data-delivered_on="{{ $supply->delivered_on }}"><i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-danger delete-button" 
-                                        data-id="{{ $supply->id }}"><i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </td>
+                                @if (auth()->user()->is_admin)
+                                    <td class="text-center">{{ $supply->actionTaker->name ?? 'N/A' }}</td>
+                                @endif
+                                @if (auth()->user()->is_admin || auth()->user()->is_editor)
+                                    <td class="text-center">
+                                        <button class="btn btn-warning"
+                                            data-id="{{ $supply->id }}"
+                                            data-particulars="{{ $supply->particulars }}"
+                                            data-status="{{ $supply->status }}"
+                                            data-ordered_on="{{ $supply->ordered_on }}"
+                                            data-delivered_on="{{ $supply->delivered_on }}"><i class="fas fa-edit"></i>
+                                        </button>
+                                        @if (auth()->user()->is_admin)
+                                            <button class="btn btn-danger delete-button"
+                                                data-id="{{ $supply->id }}"><i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        @endif
+                                    </td>
+                                @endif
                             </tr>
                         @endforeach
                     </tbody>
@@ -147,9 +159,16 @@
 
 @push('scripts')
 <script>
-    new DataTable('#suppliesTable');
-
     $(document).ready(function () {
+        new DataTable('#suppliesTable', {
+            columnDefs: [
+                {
+                    targets: 'nosort',
+                    orderable: false,
+                }
+            ],
+        });
+
         // Handle Add Button
         $('#addSupplyButton').on('click', function () {
             $('#modalTitle').text('Add New Supply');
