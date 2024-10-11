@@ -26,19 +26,22 @@ Route::get('/', function () {
     return redirect('home');
 });
 
-Route::resource('home', HomeController::class)->middleware(['auth', 'verified']);
+Route::resource('home', HomeController::class)->middleware(['auth', 'verified', 'must.change.password']);
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+Route::middleware('auth', 'must.change.password')->group(function () {
+    Route::resource('profile', ProfileController::class);
+
     Route::resource('drawings', DrawingController::class);
     Route::resource('comments', CommentController::class);
     Route::resource('drawing-files', DrawingFileController::class);
     Route::resource('report-files', ReportFileController::class);
     Route::resource('invoices', InvoiceController::class);
     Route::resource('supplies', SupplyController::class);
-    Route::resource('users', UserController::class);
+
+    Route::middleware('restrict.route.access')->group(function () {
+        Route::resource('users', UserController::class);
+    });
+
     Route::get('project-timeline', function () { return view('project-timeline'); });
 });
 
