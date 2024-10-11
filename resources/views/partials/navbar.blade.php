@@ -16,14 +16,14 @@
     </ul>
 
     <!-- Reverse Countdown Timer -->
-    {{-- <ul class="navbar-nav mx-auto">
+    {{-- <ul class="mx-auto navbar-nav">
         <li class="nav-item">
             <div id="countdown-timer" class="nav-link font-weight-bold"></div>
         </li>
     </ul> --}}
 
     <!-- Right navbar links -->
-    <ul class="navbar-nav ml-auto">
+    <ul class="ml-auto navbar-nav">
         <!-- Reverse Countdown Timer -->
         <li class="nav-item">
             <div id="countdown-timer" class="nav-link font-weight-bold text-danger"></div>
@@ -69,28 +69,22 @@
                     <div class="widget-user-header bg-info">
                         <h3 class="widget-user-username">{{ Auth::user()->name }}</h3>
                         <h5 class="widget-user-desc">
-                            @if(Auth::user()->isAdmin)
-                                Admin
-                            @elseif(Auth::user()->isVendor)
-                                Vendor
-                            @elseif(Auth::user()->isEmployee)
-                                Employee
-                            @else
-                                User
+                            @if(Auth::user()->is_admin)
+                                Role: Admin
                             @endif
                         </h5>
                     </div>
                     <div class="widget-user-image">
-                        <i class="fas fa-user-circle fa-5x text-white"></i>
+                        <i class="text-white fas fa-user-circle fa-5x"></i>
                     </div>
                     <div class="card-footer">
-                        <a href="#" class="dropdown-item">
-                            <i class="fas fa-user mr-2"></i> Profile
+                        <a href="{{ url('profile') }}" class="dropdown-item">
+                            <i class="mr-2 fas fa-user"></i> Profile
                         </a>
                         <div class="dropdown-divider"></div>
                         <a href="#" class="dropdown-item text-danger"
                         onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                            <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                            <i class="mr-2 fas fa-sign-out-alt"></i> Logout
                         </a>
                         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                             @csrf
