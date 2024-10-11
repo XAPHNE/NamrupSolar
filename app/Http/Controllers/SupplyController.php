@@ -13,7 +13,7 @@ class SupplyController extends Controller
      */
     public function index()
     {
-        $supplies = Supply::all();
+        $supplies = Supply::latest()->get();
         return view('supply', compact('supplies'));
     }
 
