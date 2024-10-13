@@ -36,6 +36,16 @@
     <!-- DataTables Buttons extension -->
     {{-- <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.7.1/css/buttons.dataTables.min.css"> --}}
 
+    <!-- Leaflet.js CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+    <style>
+        #map {
+            height: 400px; /* Set a height for the map */
+            width: 100%; /* Set full width */
+        }
+    </style>
+
     @stack('styles')
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -76,14 +86,18 @@
 
                 <!-- Salient Features Modal -->
                 <div class="modal fade" id="salientFeaturesModal">
-                    <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-dialog modal-xl" role="document">
                         <div class="modal-content">
-                            <div class="modal-header">
+                            <div class="modal-header bg-info">
                                 <h5 class="modal-title" id="modalTitle">Salient Features</h5>
+                                <button type="button" class="text-white close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
                             </div>
                             <div class="modal-body row">
                                 <div class="col sm-6">
-                                    
+                                    <!-- Map container -->
+                                    <div id="map"></div>
                                 </div>
                                 <div class="col sm-6">
                                     <ul>
@@ -163,10 +177,30 @@
 </script>
 <script src="{{ asset('dist/js/custom/countdown-timer.js') }}"></script>
 
+<!-- Leaflet.js Script -->
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
 <script>
     $(document).ready(function () {
         $('#salientFeaturesButton').on('click', function () {
             $('#salientFeaturesModal').modal('show');
+
+            setTimeout(function () {
+                // Initialize the map once the modal is opened
+                var map = L.map('map').setView([27.195510858768763, 95.37858090157266], 15); // Set your latitude and longitude here
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+
+                // Add a marker at the location
+                L.marker([27.195510858768763, 95.37858090157266]).addTo(map)
+                    .bindPopup('Location: 27.195510858768763, 95.37858090157266')
+                    .openPopup();
+
+                // Ensure map size is recalculated correctly when modal is shown
+                map.invalidateSize();
+            }, 500); // Slight delay to ensure the modal is fully open
         });
     });
 </script>
