@@ -73,6 +73,37 @@
         <section class="content">
             <div class="container-fluid">
                 @yield('content')
+
+                <!-- Salient Features Modal -->
+                <div class="modal fade" id="salientFeaturesModal">
+                    <div class="modal-dialog modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="modalTitle">Salient Features</h5>
+                            </div>
+                            <div class="modal-body row">
+                                <div class="col sm-6">
+                                    
+                                </div>
+                                <div class="col sm-6">
+                                    <ul>
+                                        <li>Point 1</li>
+                                        <li>Point 2</li>
+                                        <li>Point 3</li>
+                                        <li>Point 4</li>
+                                        <li>Point 5</li>
+                                        <li>Point 6</li>
+                                        <li>Point 7</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </section>
     </div>
@@ -131,6 +162,14 @@
     const targetDate = new Date("{{ '2025-03-31 23:59:59' }}").getTime();
 </script>
 <script src="{{ asset('dist/js/custom/countdown-timer.js') }}"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#salientFeaturesButton').on('click', function () {
+            $('#salientFeaturesModal').modal('show');
+        });
+    });
+</script>
 
 @stack('scripts')
 </body>
