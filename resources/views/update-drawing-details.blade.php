@@ -8,7 +8,7 @@
 @endsection
 
 @section('page_title')
-    Update {{ $drawingDetail->drawing_details_name }} 
+    Update {{ $drawingDetail->drawing_details_name }}
     {{-- {{ $drawingDetail->comments->drawing_details_id }} --}}
 @endsection
 
@@ -24,18 +24,22 @@
             <div class="card-header">
                 <h5 class="card-title">Uploaded Drawings</h5>
                 <div class="card-tools">
-                    <button title="Upload Updated Drawing" type="button" class="btn btn-default" data-toggle="modal" data-target="#addUpdatedDrawingModal" id="addUpdatedDrawing" data-drawing-detail-id="{{ $drawingDetail->id }}"><i class="fas fa-plus"></i></button>
+                    @if (auth()->user()->is_admin || auth()->user()->is_creator)
+                        <button title="Upload Updated Drawing" type="button" class="btn btn-default" data-toggle="modal" data-target="#addUpdatedDrawingModal" id="addUpdatedDrawing" data-drawing-detail-id="{{ $drawingDetail->id }}"><i class="fas fa-plus"></i></button>
+                    @endif
                 </div>
             </div>
             <div class="card-body">
-                <table id="uploadedDrawingsTable" class="display compact nowrap table table-bordered table-hover" style="width: 100%">
+                <table id="uploadedDrawingsTable" class="table display compact nowrap table-bordered table-hover" style="width: 100%">
                     <thead>
-                        <tr>
+                        <tr class="table-primary">
                             {{-- <th>Number</th> --}}
                             <th class="text-center">{{ $drawingDetail->drawing_details_no }}</th>
                             <th class="text-center">Comment</th>
                             <th class="text-center">Commented at</th>
-                            <th class="text-center">Add Comment</th>
+                            @if (auth()->user()->is_admin || auth()->user()->is_approver)
+                                <th class="text-center nosort">Add Comment</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody class="justify-center">
@@ -53,28 +57,32 @@
                                         {{ Carbon::parse($comment->commented_at)->format('d-m-Y, h:i A') }}<br>
                                     @endforeach
                                 </td>
-                                <td class="text-center">
-                                    <button title="Add Comment" class="btn btn-success addNewComment" data-file-id="{{ $file->id }}" @if($drawingDetail->approved_at) disabled @endif><i class="fas fa-plus"></i></button>
-                                    {{-- <button class="btn btn-warning"><i class="fas fa-edit"></i></button> --}}
-                                </td>
+                                @if (auth()->user()->is_admin || auth()->user()->is_approver)
+                                    <td class="text-center">
+                                        <button title="Add Comment" class="btn btn-success addNewComment" data-file-id="{{ $file->id }}" @if($drawingDetail->approved_at) disabled @endif><i class="fas fa-plus"></i></button>
+                                        {{-- <button class="btn btn-warning"><i class="fas fa-edit"></i></button> --}}
+                                    </td>
+                                @endif
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
             <div class="card-footer d-flex justify-content-end">
-                <form action="{{ route('drawings.update', $drawing->id) }}" method="POST">
-                    @csrf
-                    @method('PUT')
-                    <input type="hidden" name="action" value="approve_drawing">
-                    <div class="form-group">
-                        <button type="submit" id="approveDrawing" data-drawing-id="{{ $drawing->id }}" 
-                            class="btn btn-info"
-                            @if($drawingDetail->approved_at) disabled @endif>
-                            {{ $drawingDetail->approved_at ? 'Approved' : 'Approve Drawing' }}
-                        </button>
-                    </div>
-                </form>
+                @if (auth()->user()->is_admin || auth()->user()->is_approver)
+                    <form action="{{ route('drawings.update', $drawing->id) }}" method="POST">
+                        @csrf
+                        @method('PUT')
+                        <input type="hidden" name="action" value="approve_drawing">
+                        <div class="form-group">
+                            <button type="submit" id="approveDrawing" data-drawing-id="{{ $drawing->id }}"
+                                class="btn btn-info"
+                                @if($drawingDetail->approved_at) disabled @endif>
+                                {{ $drawingDetail->approved_at ? 'Approved' : 'Approve Drawing' }}
+                            </button>
+                        </div>
+                    </form>
+                @endif
             </div>
         </div>
     </div>
@@ -83,13 +91,15 @@
             <div class="card-header">
                 <h5 class="card-title">Supporting Documents</h5>
                 <div class="card-tools">
-                    <button title="Upload Supporting Documents" type="button" class="btn btn-default" data-toggle="modal" data-target="#addUpdatedDrawingModal" id="addSupportingDocument" data-drawing-detail-id="{{ $drawingDetail->id }}"><i class="fas fa-plus"></i></button>
+                    @if (auth()->user()->is_admin || auth()->user()->is_creator)
+                        <button title="Upload Supporting Documents" type="button" class="btn btn-default" data-toggle="modal" data-target="#addUpdatedDrawingModal" id="addSupportingDocument" data-drawing-detail-id="{{ $drawingDetail->id }}"><i class="fas fa-plus"></i></button>
+                    @endif
                 </div>
             </div>
             <div class="card-body">
-                <table id="uploadedReportsTable" class="display compact nowrap table table-bordered table-hover" style="width: 100%">
+                <table id="uploadedReportsTable" class="table display compact nowrap table-bordered table-hover" style="width: 100%">
                     <thead>
-                        <tr>
+                        <tr class="table-primary">
                             {{-- <th>Number</th> --}}
                             <th class="text-center">{{ $drawingDetail->drawing_details_no }}</th>
                             <th class="text-center">File Name</th>
@@ -172,6 +182,12 @@
         lengthChange: false,
         paging: false,
         scrollX: true,
+        columnDefs: [
+            {
+                targets: 'nosort',
+                orderable: false,
+            },
+        ]
     });
     new DataTable('#uploadedReportsTable', {
         searching: false,
