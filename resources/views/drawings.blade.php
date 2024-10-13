@@ -11,22 +11,22 @@
 @section('content')
     <div class="row">
         @foreach($drawings as $drawing)
-            <div class="col-sm-2 mb-2">
-                <div class="card shadow-sm bg-info clickable-card" 
-                    data-id="{{ $drawing->id }}" 
-                    data-name="{{ $drawing->name }}" 
+            <div class="mb-2 col-sm-2">
+                <div class="shadow-sm card bg-info clickable-card"
+                    data-id="{{ $drawing->id }}"
+                    data-name="{{ $drawing->name }}"
                     style="height: 60px; margin: 0 auto;">
                     <div class="p-3 text-center">
-                        <p class="text-center mb-0" style="font-size: 14px;">{{ $drawing->name }}</p>
+                        <p class="mb-0 text-center" style="font-size: 14px;">{{ $drawing->name }}</p>
                         <a href="#" class="stretched-link"></a>
                     </div>
                 </div>
             </div>
-        @endforeach    
+        @endforeach
     </div>
 
     <!-- Charts and DataTable -->
-    <div class="row mt-4">
+    <div class="mt-4 row">
         <div class="col-sm-6">
             <div class="card card-info">
                 <div class="card-header">
@@ -55,34 +55,36 @@
     </div>
 
     <!-- DataTable for Drawing Details -->
-    <div class="row mt-4">
+    <div class="mt-4 row">
         <div class="col-12">
             <div class="card card-info">
                 <div class="card-header">
                     <h3 class="d-inline">Drawing Details</h3>
                     <div class="card-tools">
-                        <button type="button" class="btn btn-default" data-toggle="modal" data-target="#addDrawingModal" id="addNewDrawing"><i class="fas fa-plus"></i> Add New Drawing</button>
+                        @if (auth()->user()->is_admin || auth()->user()->is_creator)
+                            <button type="button" class="btn btn-default" data-toggle="modal" data-target="#addDrawingModal" id="addNewDrawing"><i class="fas fa-plus"></i> Add New Drawing</button>
+                        @endif
                     </div>
                 </div>
                 <div class="card-body">
-                    <table id="drawingDetailsTable" class="display nowrap table table-bordered table-hover">
+                    <table id="drawingDetailsTable" class="table display nowrap table-bordered table-hover">
                         <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Number</th>
-                                <th>Name</th>
-                                <th>Scope</th>
-                                <th>Submitted At</th>
+                            <tr class="table-primary">
+                                <th class="text-center">#</th>
+                                <th class="text-center">Number</th>
+                                <th class="text-center">Name</th>
+                                <th class="text-center nosort">Scope</th>
+                                <th class="text-center">Submitted At</th>
                                 {{-- <th>Submitted By</th> --}}
                                 {{-- <th>Latest Comment</th> --}}
                                 {{-- <th>Commented At</th> --}}
                                 {{-- <th>Commented By</th> --}}
                                 {{-- <th>Resubmitted At</th> --}}
-                                <th>Approved At</th>
+                                <th class="text-center">Approved At</th>
                                 {{-- <th>Approved By</th> --}}
-                                <th>Drawing File</th>
+                                <th class="text-center nosort">Drawing File</th>
                                 {{-- <th>Supporting Documents</th> --}}
-                                <th>Actions</th>
+                                <th class="text-center nosort noshow">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -127,7 +129,7 @@
                         </div>
                         <div class="form-group">
                             <label for="isScopeDrawing">Is Scope</label>
-                            <input type="checkbox" id="isScopeDrawing" name="isScopeDrawing" data-on="Yes" data-off="No" data-onstyle="success" data-offstyle="secondary" value="1" data-toggle="toggle">
+                            <input type="checkbox" class="form-control" id="isScopeDrawing" name="isScopeDrawing" data-on="Yes" data-off="No" data-onstyle="success" value="1" data-toggle="toggle" data-style="ios">
                         </div>
                         <div class="form-group">
                             <label for="submitted_at">Submitted At</label>
@@ -171,8 +173,14 @@
             </div>
         </div>
     </div>
-
 @endsection
+
+@push('styles')
+<style>
+    .toggle.ios, .toggle-on.ios, .toggle-off.ios { border-radius: 20px; }
+    .toggle.ios .toggle-handle { border-radius: 20px; }
+</style>
+@endpush
 
 @push('scripts')
 <script>
@@ -181,13 +189,25 @@
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         }
     });
-    
+
     $(document).ready(function () {
         // Initialize DataTable with scrollX enabled
         var table = $('#drawingDetailsTable').DataTable({
             scrollX: true,  // Enable horizontal scrolling
             columnDefs: [
-                { targets: 0, visible: false }  // Hide the first column (ID)
+                { targets: 0, visible: false },  // Hide the first column (ID)
+                {
+                        targets: 'noshow',
+                        visible: {{ auth()->user()->is_admin ? 'true' : 'false' }},
+                },
+                {
+                    targets: 'nosort',
+                    orderable: false,
+                },
+                {
+                    className: "text-center", // Apply centering to all columns
+                    targets: "_all" // Apply to all columns (or you can specify particular column indexes if needed)
+                }
             ]
         });
 
@@ -278,7 +298,7 @@
                             // `<a href="${detail.report_file_url}">View Supporting Document</a>`,
                             // drawingFileLink,  // Latest drawing file link
                             // reportFileLink,  // Latest report file link
-                            `<button class="btn btn-danger delete-drawing" data-id="${detail.id}">Delete</button>`
+                            `<button class="btn btn-danger delete-drawing" data-id="${detail.id}"><i class="fas fa-trash-alt"></i></button>`
                         ];
                     });
 
@@ -350,6 +370,14 @@
                     console.error('Error deleting drawing:', xhr);
                 }
             });
+        });
+
+        // Reset toggle state when the modal is closed
+        $('#drawingModal').on('hidden.bs.modal', function () {
+            // Reset the form fields and toggle states
+            $('#drawingForm')[0].reset();
+            // Reset the toggle state and refresh UI
+            $('#isScopeDrawing').prop('checked', false).change(); // Ensure UI is updated
         });
     });
 </script>
