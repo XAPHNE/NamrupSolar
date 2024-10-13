@@ -7,7 +7,7 @@
 @section('content-header')
     <div class="content-header">
         <div class="container-fluid">
-            <div class="row mb-2">
+            <div class="mb-2 row">
                 <div class="col-sm-6">
                     <h1 class="m-0">Home</h1>
                 </div>
@@ -85,16 +85,16 @@
             </div>
         </div>
     </div>
-    <div class="row pb-3">
+    <div class="pb-3 row">
         <div class="col-sm-12">
             {{-- Physical completion card --}}
             <div class="card">
-                <div class="card-body p-1">
+                <div class="p-1 card-body">
                     <div class="progress" style="height:30px">
                         <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar"
-                            aria-valuenow="{{ round($totalProgress, 2) }}" 
-                            aria-valuemin="0" 
-                            aria-valuemax="100" 
+                            aria-valuenow="{{ round($totalProgress, 2) }}"
+                            aria-valuemin="0"
+                            aria-valuemax="100"
                             style="width: {{ round($totalProgress, 2) }}%;">
                             <span class="text-center">Physical Completion: {{ round($totalProgress, 2) }}%</span>
                         </div>
@@ -118,25 +118,29 @@
             @foreach($chunk as $majorActivity)
                 <div class="col-sm-2">
                     <!-- Wrap the card in an anchor tag to make it clickable -->
+                    @if (auth()->user()->is_admin || auth()->user()->is_editor)
                     <a href="{{ route('home.edit', $majorActivity->id) }}" style="text-decoration: none; color: inherit;">
+                    @endif
                         <div class="card card-info" style="min-height: 197px">
-                            <div class="card-header text-center m-0 p-0" style="min-height: 50px">
-                                <h7 class="m-0 p-0"><strong>{{ $majorActivity->name }}</strong></h7>
+                            <div class="p-0 m-0 text-center card-header" style="min-height: 50px">
+                                <h7 class="p-0 m-0"><strong>{{ $majorActivity->name }}</strong></h7>
                             </div>
-                            <div class="card-body text-center pt-1 pb-1">
+                            <div class="pt-1 pb-1 text-center card-body">
                                 <img src="{{ asset($majorActivity->image_path) }}" width="130px">
                             </div>
-                            <div class="card-footer pt-0 pb-0">
+                            <div class="pt-0 pb-0 card-footer">
                                 <p class="m-0" style="font-size: 12px">Scope: <strong>{{ $majorActivity->scope }}</strong> {{ $majorActivity->unit }}</p>
                                 <div class="progress">
                                     <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" aria-valuenow="{{ ($majorActivity->completed / $majorActivity->scope) * 100 }}" aria-valuemin="0" aria-valuemax="100" style="width:{{ ($majorActivity->completed / $majorActivity->scope) * 100 }}%">
-                                        <span class="text-center p-0">{{ round(($majorActivity->completed / $majorActivity->scope) * 100, 2) }}%</span>
+                                        <span class="p-0 text-center">{{ round(($majorActivity->completed / $majorActivity->scope) * 100, 2) }}%</span>
                                     </div>
                                 </div>
-                                <p class="m-0 p-0" style="font-size: 12px">Completed: <strong>{{ $majorActivity->completed }}</strong> {{ $majorActivity->unit }}</p>
+                                <p class="p-0 m-0" style="font-size: 12px">Completed: <strong>{{ $majorActivity->completed }}</strong> {{ $majorActivity->unit }}</p>
                             </div>
                         </div>
+                    @if (auth()->user()->is_admin || auth()->user()->is_editor)
                     </a>
+                    @endif
                 </div>
             @endforeach
         </div>
@@ -158,7 +162,7 @@
                 text: '{{ session('success') }}',
             });
         @endif
-    
+
         // Check if there's an error message in the session
         @if(session('error'))
             Swal.fire({
