@@ -100,15 +100,87 @@
                                     <div id="map"></div>
                                 </div>
                                 <div class="col sm-6">
-                                    <ul>
-                                        <li>Point 1</li>
-                                        <li>Point 2</li>
-                                        <li>Point 3</li>
-                                        <li>Point 4</li>
-                                        <li>Point 5</li>
-                                        <li>Point 6</li>
-                                        <li>Point 7</li>
-                                    </ul>
+                                    <table id="salientFeaturesTable" class="table nowrap table-borderless table-striped table-sm" style="width: 100%">
+                                        <thead>
+                                            <tr class="table-primary diaplay-block">
+                                                <th>Project Facts</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Project Location</td>
+                                                <td>NTPS, Dibrugarh</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacity</td>
+                                                <td>25 MW</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Land Available</td>
+                                                <td>107 acres</td>
+                                            </tr>
+                                            <tr>
+                                                <td>CUF (ac)</td>
+                                                <td>23.27%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Gross Energy Generation</td>
+                                                <td>50.96 MU</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Total Project Cost</td>
+                                                <td>115.86 Cr</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Debt:Equity</td>
+                                                <td>70:30</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Loan Amount</td>
+                                                <td>81.10 Cr</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Equity Amount</td>
+                                                <td>34.76 Cr</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Equity Contribution</td>
+                                                <td>
+                                                    APGCL - 17.72 Cr (51%)<br>
+                                                    OIL - 17.03 Cr (49%)
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Levelized Cost of Generation (25 Years)</td>
+                                                <td>Replace</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Project IRR (Pre-Tax)</td>
+                                                <td>12.58%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Equity IRR (Post-Tax)</td>
+                                                <td>12.04%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Average DSCR</td>
+                                                <td>1.21</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Payback Period</td>
+                                                <td>11.85 Years</td>
+                                            </tr>
+                                            <tr>
+                                                <td>NPV</td>
+                                                <td>12.09 Cr</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Completion Date</td>
+                                                <td>12 Months from LOA</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -202,6 +274,15 @@
                 map.invalidateSize();
             }, 500); // Slight delay to ensure the modal is fully open
         });
+
+        new DataTable('#salientFeaturesTable', {
+            info: false,
+            paging: false,
+            ordering: false,
+            searching: false,
+            scrollCollapse: true,
+            scrollY: '50vh',
+        })
     });
 </script>
 
