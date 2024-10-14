@@ -1,0 +1,11 @@
+id,name,image_path,scope,completed,unit,created_at,updated_at,deleted_at
+1,MMS Installation,dist/img/home/solar-mms.png,700,0,T,09-09-2024 15:31,10-09-2024 15:31,NULL
+2,Module Installation ,dist/img/home/solar-module-installation.jpg,60480,0,nos,09-09-2024 15:31,10-09-2024 15:31,NULL
+3,Inverter Installation ,dist/img/home/solar-inverter.jpg,84,0,nos ,09-09-2024 15:31,10-09-2024 15:31,NULL
+4,DC Cable Laying and Termination,dist/img/home/solar-dc-cable.png,245,0,km ,09-09-2024 15:31,10-09-2024 15:31,NULL
+5,AC Cable laying and Termination,dist/img/home/solar-ac-cable.png,52.5,0,km,09-09-2024 15:31,10-09-2024 15:31,NULL
+6,Earthing Strip Laying & Interconnection ,dist/img/home/solar-earthing-strip.jpg,35,0,km ,09-09-2024 15:31,10-09-2024 15:31,NULL
+7,LA Installation,dist/img/home/solar-lightning-arrester.jpg,20,0,Nos,09-09-2024 15:31,10-09-2024 15:31,NULL
+8,LT Panel Installation ,dist/img/home/solar-lt-panel.jpg,4,0,no,09-09-2024 15:31,10-09-2024 15:31,NULL
+9,HT Panel Installation ,dist/img/home/solar-ht-panel.jpg,4,0,no,09-09-2024 15:31,10-09-2024 15:31,NULL
+10,Inverter Duty Transformer (IDT),dist/img/home/solar-inverter-duty-tranformer.jpg,4,0,no,09-09-2024 15:31,10-09-2024 15:31,NULL
