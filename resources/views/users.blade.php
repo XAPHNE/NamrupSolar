@@ -237,9 +237,13 @@
 
 @push('scripts')
 <script>
-    new DataTable('#usersTable');
-
     $(document).ready(function () {
+
+        new DataTable('#usersTable', {
+            scrollX: {{ auth()->user()->is_admin ? 'true' : 'false' }}
+        });
+
+
         // Handle role toggle buttons to allow only one active at a time
         $('.role-toggle').on('change', function () {
             if ($(this).is(':checked')) {
