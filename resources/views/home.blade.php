@@ -101,16 +101,16 @@
                     </div>
                 </div>
             </div>
-            {{-- Time completion Card --}}
-            <!-- <div class="card">
-                <div class="card-body">
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:70%">
-                            <span class="text-center">Time Completion: 70%</span>
+            {{-- Financial completion Card --}}
+            <div class="card">
+                <div class="p-1 card-body">
+                    <div class="progress" style="height:30px">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" aria-valuenow="{{ round($totalFinancialProgress, 2) }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ round($totalFinancialProgress, 2) }}%;">
+                            <span class="text-center">Financial Completion: {{ round($totalFinancialProgress, 2) }}%</span>
                         </div>
                     </div>
                 </div>
-            </div> -->
+            </div>
         </div>
     </div>
     @foreach($majorActivities->chunk(5) as $chunk)  <!-- Group the cards in chunks of 5 -->
