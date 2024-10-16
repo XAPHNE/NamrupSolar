@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Invoice;
 use App\Models\MajorActivity;
 use Exception;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ class HomeController extends Controller
 
         // Fetch all MajorActivity records
         $majorActivities = MajorActivity::all();
+        $invoices = Invoice::all();
 
         // Calculate total progress by averaging individual progress for each activity
         $totalProgress = 0;
@@ -34,8 +36,20 @@ class HomeController extends Controller
             $totalProgress = $totalProgress / $activityCount;
         }
 
+        $totalFinancialProgress = 0;
+        $totalProjectCost = 1158600000;
+        $invoiceCount = $invoices->count();
+
+        if ($invoiceCount > 0) {
+            foreach ($invoices as $invoice) {
+                $totalFinancialProgress = $totalFinancialProgress + $invoice->amount;
+            }
+        }
+
+        $totalFinancialProgress = ($totalFinancialProgress / $totalProjectCost) * 100;
+
         // Pass all necessary variables to the view
-        return view('home', compact('majorActivities', 'totalProgress'));
+        return view('home', compact('majorActivities', 'totalProgress', 'totalFinancialProgress'));
     }
 
     /**
