@@ -37,7 +37,7 @@
             </div>
         </div>
         <div class="col-lg-2 col-6">
-            <div class="small-box bg-info">
+            <div class="small-box bg-success">
                 <div class="inner">
                     <h4>11 Jun 2021</h4>
                     <p style="font-size: 14px">Land Handover Date</p>
@@ -49,7 +49,7 @@
             </div>
         </div>
         <div class="col-lg-2 col-6">
-            <div class="small-box bg-info">
+            <div class="small-box bg-warning">
                 <div class="inner">
                     <h4>31 Aug 2024</h4>
                     <p style="font-size: 14px">Contractual End Date</p>
@@ -61,7 +61,7 @@
             </div>
         </div>
         <div class="col-lg-2 col-6">
-            <div class="small-box bg-info">
+            <div class="small-box bg-danger">
                 <div class="inner">
                     <h4>31 Dec 2024</h4>
                     <p style="font-size: 14px">Best Effort Completion</p>
@@ -73,7 +73,7 @@
             </div>
         </div>
         <div class="col-lg-2 col-6">
-            <div class="small-box bg-info">
+            <div class="small-box bg-primary">
                 <div class="inner">
                     <h4>14 Jul 2025</h4>
                     <p style="font-size: 14px">EOT-1 Completion Date</p>
@@ -121,7 +121,21 @@
                     @if (auth()->user()->is_admin || auth()->user()->is_editor)
                     <a href="{{ route('home.edit', $majorActivity->id) }}" style="text-decoration: none; color: inherit;">
                     @endif
-                        <div class="card card-info" style="min-height: 197px">
+                        <div class="card 
+                            @if($loop->iteration == 1) {
+                                card-info
+                            } @elseif ($loop->iteration == 2) {
+                                card-success
+                            } @elseif ($loop->iteration == 3) {
+                                card-warning
+                            } @elseif ($loop->iteration == 4) {
+                                card-danger
+                            } @elseif ($loop->iteration == 5) {
+                                card-primary
+                            } @else {
+                                card-secondary
+                            }
+                            @endif" style="min-height: 197px">
                             <div class="p-0 m-0 text-center card-header" style="min-height: 50px">
                                 <h7 class="p-0 m-0"><strong>{{ $majorActivity->name }}</strong></h7>
                             </div>
